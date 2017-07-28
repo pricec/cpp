@@ -1,3 +1,4 @@
+#include "IWorkItem.hpp"
 #include "WorkQueue.hpp"
 
 using namespace common;
@@ -64,7 +65,7 @@ bool WorkQueue::enqueue(IWorkItem &item)
 {
   {
     std::lock_guard<std::mutex> lock(m_mtx);
-    m_q.push_front(item);
+    m_q.push_front(&item);
   }
   m_cv.notify_one();
   return true;
@@ -72,7 +73,7 @@ bool WorkQueue::enqueue(IWorkItem &item)
 
 void WorkQueue::workLoop()
 {
-  IWorkItem work;
+  IWorkItem *work;
   while (true)
   {
     {
@@ -86,6 +87,6 @@ void WorkQueue::workLoop()
       work = m_q.back();
       m_q.pop_back();
     }
-    work.doWork();
+    work->doWork();
   }
 }

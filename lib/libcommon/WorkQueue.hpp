@@ -15,7 +15,7 @@
 #include <thread>
 #include <vector>
 
-#include "IWorkItem.hpp"
+class IWorkItem;
 
 namespace common
 {
@@ -76,7 +76,7 @@ private:
 
 private:
   std::mutex m_mtx;
-  std::deque<IWorkItem> m_q;
+  std::deque<IWorkItem*> m_q;
   std::condition_variable m_cv;
   std::vector<std::thread> m_threads;
   uint8_t m_numThreads;

@@ -12,57 +12,19 @@
  *       WorkQueue is stopped.
  */
 #pragma once
-#include <deque>
 #include <functional>
-#include <mutex>
 
 namespace common
 {
 
+class WorkQueue;
+
 class IWorkItem
 {
 public:
-  IWorkItem() {}
-  IWorkItem(const IWorkItem &other)
-  {
-    *this = other;
-  }
-
   virtual ~IWorkItem() {}
-
-  virtual void doWork()
-  {
-    std::function<void(void)> work([](){});
-    {
-      std::lock_guard<std::mutex> lock(m_mtx);
-      if (!m_q.empty())
-      {
-	work = m_q.back();
-	m_q.pop_back();
-      }
-    }
-    work();
-  }
-
-  virtual void enqueue(std::function<void(void)> f)
-  {
-    std::lock_guard<std::mutex> lock(m_mtx);
-    m_q.push_front(f);
-  }
-
-  virtual IWorkItem& operator=(const IWorkItem& other)
-  {
-    std::deque< std::function<void(void)> > otherQ(other.m_q);
-    {
-      std::lock_guard<std::mutex> lock(m_mtx);
-      m_q.swap(otherQ);
-    }
-    return *this;
-  }
-
-private:
-  std::mutex m_mtx;
-  std::deque< std::function<void(void)> > m_q;
+  virtual void doWork() = 0;
+  virtual bool enqueue(std::function<void(void)> f) = 0;
 }; // class IWorkItem
 
 }; // namespace common
