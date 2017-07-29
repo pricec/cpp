@@ -59,18 +59,18 @@ char Message::getByte(size_t offset) const
     size_t startOffset = 0;
     for (const auto &mbh : m_bufs)
     {
-        if (startOffset + mbh.m_length >= offset)
+        if (startOffset + mbh.m_length > offset)
         {
             // The byte is in this MessageBufferHolder
             return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
         }
         startOffset += mbh.m_length;
     }
-    if (offset > startOffset)
+    if (offset >= startOffset)
     {
         for (const auto &mbh : m_dbufs)
         {
-            if (startOffset + mbh.m_length >= offset)
+            if (startOffset + mbh.m_length > offset)
             {
                 // The byte is in this MessageBufferHolder
                 return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
