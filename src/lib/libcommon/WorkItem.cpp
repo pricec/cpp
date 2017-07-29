@@ -9,7 +9,7 @@ WorkItem::WorkItem(WorkQueue &wq)
 WorkItem::~WorkItem()
 {}
 
-void WorkItem::doWork()
+void WorkItem::run()
 {
     std::function<void(void)> work([](){});
     {
@@ -23,7 +23,7 @@ void WorkItem::doWork()
     work();
 }
 
-bool WorkItem::enqueue(std::function<void(void)> f)
+bool WorkItem::defer(std::function<void(void)> f)
 {
     std::lock_guard<std::mutex> lock(m_mtx);
     m_q.push_front(f);

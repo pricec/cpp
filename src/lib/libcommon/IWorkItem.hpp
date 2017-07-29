@@ -23,8 +23,8 @@ class IWorkItem
 {
 public:
     virtual ~IWorkItem() {}
-    virtual void doWork() = 0;
-    virtual bool enqueue(std::function<void(void)> f) = 0;
+    virtual void run() = 0;
+    virtual bool defer(std::function<void(void)> f) = 0;
 }; // class IWorkItem
 
 }; // namespace common

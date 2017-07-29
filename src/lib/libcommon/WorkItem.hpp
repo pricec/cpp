@@ -14,8 +14,8 @@ public:
     WorkItem(WorkQueue &wq);
     ~WorkItem();
 
-    void doWork() override;
-    bool enqueue(std::function<void(void)> f) override;
+    void run() override;
+    bool defer(std::function<void(void)> f) override;
 
 private:
     std::mutex m_mtx;

@@ -87,6 +87,6 @@ void WorkQueue::workLoop()
             work = m_q.back();
             m_q.pop_back();
         }
-        work->doWork();
+        work->run();
     }
 }
