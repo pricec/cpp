@@ -2,6 +2,8 @@ add_executable(
   t-libcommon
   t-libcommon.cpp
   TestEvent.cpp
+  TestFuture.cpp
+  TestWorkQueue.cpp
 )
 
 add_test(

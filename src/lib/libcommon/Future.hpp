@@ -13,12 +13,14 @@ public:
   {
     m_value = value;
     m_event.signal();
+    return true;
   }
 
   bool cancel()
   {
     m_cancelled = true;
     m_event.signal();
+    return m_cancelled;
   }
 
   bool wait()
