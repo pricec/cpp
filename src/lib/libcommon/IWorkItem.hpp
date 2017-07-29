@@ -22,9 +22,9 @@ class WorkQueue;
 class IWorkItem
 {
 public:
-  virtual ~IWorkItem() {}
-  virtual void doWork() = 0;
-  virtual bool enqueue(std::function<void(void)> f) = 0;
+    virtual ~IWorkItem() {}
+    virtual void doWork() = 0;
+    virtual bool enqueue(std::function<void(void)> f) = 0;
 }; // class IWorkItem
 
 }; // namespace common

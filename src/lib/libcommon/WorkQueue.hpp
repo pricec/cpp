@@ -23,65 +23,65 @@ namespace common
 class WorkQueue
 {
 public:
-  WorkQueue(uint8_t numThreads);
-  ~WorkQueue();
+    WorkQueue(uint8_t numThreads);
+    ~WorkQueue();
 
-  /**
-   * Start the WorkQueue running. This means
-   * workers will be running to service any
-   * enqueued items. Returns true if the
-   * WorkQueue is running and false otherwise.
-   */
-  bool start();
+    /**
+     * Start the WorkQueue running. This means
+     * workers will be running to service any
+     * enqueued items. Returns true if the
+     * WorkQueue is running and false otherwise.
+     */
+    bool start();
 
-  /**
-   * Stop the WorkQueue. This means instructing
-   * all the workers currently servicing the
-   * queue to exit and waiting for them to
-   * exit. Returns true if the queue is stopped
-   * and false otherwise.
-   *
-   * NOTE: The WorkQueue will be stopped and the
-   *       items on the queue will be discarded!
-   */
-  bool stop();
+    /**
+     * Stop the WorkQueue. This means instructing
+     * all the workers currently servicing the
+     * queue to exit and waiting for them to
+     * exit. Returns true if the queue is stopped
+     * and false otherwise.
+     *
+     * NOTE: The WorkQueue will be stopped and the
+     *       items on the queue will be discarded!
+     */
+    bool stop();
 
-  /**
-   * Request an async stop of the WorkQueue. This
-   * means asking the workers currently servicing
-   * the queue to stop doing so. Returns true if
-   * a stop has been requested and false otherwise.
-   */
-  bool requestStop();
+    /**
+     * Request an async stop of the WorkQueue. This
+     * means asking the workers currently servicing
+     * the queue to stop doing so. Returns true if
+     * a stop has been requested and false otherwise.
+     */
+    bool requestStop();
 
-  /**
-   * Wait for a requested async stop. Returns true
-   * if the stop was requested and the WorkQueue is
-   * stopped and false otherwise.
-   *
-   * NOTE: The WorkQueue will be stopped and the
-   *       items on the queue will be discarded!
-   */
-  bool waitStop();
+    /**
+     * Wait for a requested async stop. Returns true
+     * if the stop was requested and the WorkQueue is
+     * stopped and false otherwise.
+     *
+     * NOTE: The WorkQueue will be stopped and the
+     *       items on the queue will be discarded!
+     */
+    bool waitStop();
 
-  /**
-   * Enqueue an IWorkItem onto the WorkQueue. Returns
-   * true if the item was successfully enqueued and
-   * false otherwise.
-   */
-  bool enqueue(IWorkItem &item);
-
-private:
-  void workLoop();
+    /**
+     * Enqueue an IWorkItem onto the WorkQueue. Returns
+     * true if the item was successfully enqueued and
+     * false otherwise.
+     */
+    bool enqueue(IWorkItem &item);
 
 private:
-  std::mutex m_mtx;
-  std::deque<IWorkItem*> m_q;
-  std::condition_variable m_cv;
-  std::vector<std::thread> m_threads;
-  uint8_t m_numThreads;
-  bool m_running;
-  bool m_exit;
+    void workLoop();
+
+private:
+    std::mutex m_mtx;
+    std::deque<IWorkItem*> m_q;
+    std::condition_variable m_cv;
+    std::vector<std::thread> m_threads;
+    uint8_t m_numThreads;
+    bool m_running;
+    bool m_exit;
 }; // class WorkQueue
 
 }; // namespace common
