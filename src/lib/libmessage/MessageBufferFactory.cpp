@@ -13,6 +13,6 @@ MessageBufferFactory::~MessageBufferFactory()
 
 std::shared_ptr<MessageBuffer> MessageBufferFactory::allocate(size_t size)
 {
-    return std::shared_ptr<MessageBuffer>(
-        new MessageBuffer(m_strategy.allocate(size), size));
+    return std::shared_ptr<MessageBuffer>(new MessageBuffer(m_strategy, size));
 }
+

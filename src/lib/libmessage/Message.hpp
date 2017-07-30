@@ -18,6 +18,14 @@
 namespace message
 {
 
+/**
+ * This struct is meant to hold a message buffer, together
+ * with an offset and a length. This is because messages
+ * will potentially be sliced up in different ways, and
+ * we may need to refer to only part of a MessageBuffer.
+ * Additionally, multiple message may share the same
+ * MessageBuffer, but with different length and offset.
+ */
 struct MessageBufferHolder
 {
     MessageBufferHolder() {}
@@ -55,17 +63,42 @@ public:
     Message(const Message &other);
     ~Message();
 
+    /**
+     * The equals operator simply makes a read-only
+     * shallow copy of the Message. Refcounts are adjusted
+     * so that the underlying buffer cannot be freed before
+     * both the copy and the original Message are deleted.
+     */
     Message& operator=(const Message &rhs);
 
+    /**
+     * Append the provided MessageBuffer with the provided
+     * offset and length to this Message.
+     */
     bool append(
         const std::shared_ptr<MessageBuffer> &mb,
         size_t offset, size_t length
     );
+    /**
+     * Append the entire provided MessageBuffer (that is,
+     * offset = 0 and length = mb.size()) to this Message.
+     */
     bool append(const std::shared_ptr<MessageBuffer> &mb);
+    /**
+     * Append the entire provided Message to this Message.
+     */
     bool append(const Message &m);
 
+    /**
+     * Get the byte at the specified offset, as a character.
+     */
     char getByte(size_t offset) const;
 
+    /**
+     * Get a new Message whose data is equal to this Message
+     * starting at the provided offset and for the provided
+     * length.
+     */
     Message getData(size_t offset, size_t length) const;
 
 private:
