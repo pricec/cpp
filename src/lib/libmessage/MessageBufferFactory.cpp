@@ -11,8 +11,8 @@ MessageBufferFactory::MessageBufferFactory(
 MessageBufferFactory::~MessageBufferFactory()
 {}
 
-std::shared_ptr<MessageBuffer> MessageBufferFactory::allocate(size_t size)
+ManagedBuffer MessageBufferFactory::allocate(size_t size)
 {
-    return std::shared_ptr<MessageBuffer>(new MessageBuffer(m_strategy, size));
+    return ManagedBuffer(new MessageBuffer(m_strategy, size));
 }
 

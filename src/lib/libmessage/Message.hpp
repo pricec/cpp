@@ -35,7 +35,7 @@ struct MessageBufferHolder
         , m_length(other.m_length)
     {}
     MessageBufferHolder(
-        const std::shared_ptr<MessageBuffer> &buf,
+        const ManagedBuffer &buf,
         size_t offset, size_t length
     )
         : m_buf(buf)
@@ -51,7 +51,7 @@ struct MessageBufferHolder
         return *this;
     }
 
-    std::shared_ptr<MessageBuffer> m_buf;
+    ManagedBuffer m_buf;
     size_t m_offset;
     size_t m_length;
 };
@@ -76,14 +76,14 @@ public:
      * offset and length to this Message.
      */
     bool append(
-        const std::shared_ptr<MessageBuffer> &mb,
+        const ManagedBuffer &mb,
         size_t offset, size_t length
     );
     /**
      * Append the entire provided MessageBuffer (that is,
      * offset = 0 and length = mb.size()) to this Message.
      */
-    bool append(const std::shared_ptr<MessageBuffer> &mb);
+    bool append(const ManagedBuffer &mb);
     /**
      * Append the entire provided Message to this Message.
      */

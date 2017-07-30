@@ -17,6 +17,8 @@
 namespace message
 {
 
+using ManagedBuffer = std::shared_ptr<MessageBuffer>;
+
 class MessageBufferFactory
 {
 public:
@@ -28,7 +30,7 @@ public:
      * size bytes. Returns a shared_ptr to the allocated
      * MessageBuffer.
      */
-    std::shared_ptr<MessageBuffer> allocate(size_t size);
+    ManagedBuffer allocate(size_t size);
 
 private:
     IMessageBufferAllocationStrategy &m_strategy;

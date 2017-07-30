@@ -28,7 +28,7 @@ Message& Message::operator=(const Message &rhs)
 }
 
 bool Message::append(
-    const std::shared_ptr<MessageBuffer> &mb,
+    const ManagedBuffer &mb,
     size_t offset,
     size_t length
 )
@@ -47,7 +47,7 @@ bool Message::append(
     return true;
 }
 
-bool Message::append(const std::shared_ptr<MessageBuffer> &mb)
+bool Message::append(const ManagedBuffer &mb)
 {
     return append(mb, 0, mb->size());
 }
