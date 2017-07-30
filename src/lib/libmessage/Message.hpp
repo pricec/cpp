@@ -21,6 +21,11 @@ namespace message
 struct MessageBufferHolder
 {
     MessageBufferHolder() {}
+    MessageBufferHolder(const MessageBufferHolder &other)
+        : m_buf(other.m_buf)
+        , m_offset(other.m_offset)
+        , m_length(other.m_length)
+    {}
     MessageBufferHolder(
         const std::shared_ptr<MessageBuffer> &buf,
         size_t offset, size_t length
@@ -29,6 +34,15 @@ struct MessageBufferHolder
         , m_offset(offset)
         , m_length(length)
     {}
+
+    MessageBufferHolder& operator=(const MessageBufferHolder &other)
+    {
+        m_buf = other.m_buf;
+        m_offset = other.m_offset;
+        m_length = other.m_length;
+        return *this;
+    }
+
     std::shared_ptr<MessageBuffer> m_buf;
     size_t m_offset;
     size_t m_length;
@@ -41,6 +55,8 @@ public:
     Message(const Message &other);
     ~Message();
 
+    Message& operator=(const Message &rhs);
+
     bool append(
         const std::shared_ptr<MessageBuffer> &mb,
         size_t offset, size_t length
@@ -49,6 +65,8 @@ public:
     bool append(const Message &m);
 
     char getByte(size_t offset) const;
+
+    Message getData(size_t offset, size_t length) const;
 
 private:
     static const size_t NUM_STATIC = 5;
