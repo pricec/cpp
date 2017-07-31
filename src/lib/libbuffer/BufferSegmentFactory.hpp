@@ -17,7 +17,7 @@
 namespace buffer
 {
 
-using ManagedBuffer = std::shared_ptr<DataSegment>;
+using BufferSegment = std::shared_ptr<DataSegment>;
 
 class BufferSegmentFactory
 {
@@ -30,7 +30,7 @@ public:
      * size bytes. Returns a shared_ptr to the allocated
      * DataSegment.
      */
-    ManagedBuffer allocate(size_t size);
+    BufferSegment allocate(size_t size);
 
 private:
     IBufferSegmentAllocationStrategy &m_strategy;

@@ -11,8 +11,8 @@ BufferSegmentFactory::BufferSegmentFactory(
 BufferSegmentFactory::~BufferSegmentFactory()
 {}
 
-ManagedBuffer BufferSegmentFactory::allocate(size_t size)
+BufferSegment BufferSegmentFactory::allocate(size_t size)
 {
-    return ManagedBuffer(new DataSegment(m_strategy, size));
+    return BufferSegment(new DataSegment(m_strategy, size));
 }
 

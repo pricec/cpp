@@ -22,46 +22,46 @@ Buffer& Buffer::operator=(const Buffer &rhs)
     {
         m_bufs[i] = rhs.m_bufs[i];
     }
-    std::deque<DataSegmentHolder> otherBufs(rhs.m_dbufs);
+    std::deque<BufferSegmentHolder> otherBufs(rhs.m_dbufs);
     m_dbufs.swap(otherBufs);
     return *this;
 }
 
 bool Buffer::append(
-    const ManagedBuffer &mb,
+    const BufferSegment &bs,
     size_t offset,
     size_t length
 )
 {
     if (m_dbufs.empty() && m_numStatic < NUM_STATIC)
     {
-        DataSegmentHolder &buf(m_bufs[m_numStatic++]);
-        buf.m_buf = mb;
+        BufferSegmentHolder &buf(m_bufs[m_numStatic++]);
+        buf.m_bs = bs;
         buf.m_offset = offset;
         buf.m_length = length;
     }
     else
     {
-        m_dbufs.emplace_back(mb, offset, length);
+        m_dbufs.emplace_back(bs, offset, length);
     }
     return true;
 }
 
-bool Buffer::append(const ManagedBuffer &mb)
+bool Buffer::append(const BufferSegment &bs)
 {
-    return append(mb, 0, mb->size());
+    return append(bs, 0, bs->size());
 }
 
 bool Buffer::append(const Buffer &m)
 {
     for (size_t i = 0; i < m.m_numStatic; ++i)
     {
-        const DataSegmentHolder &mbh(m.m_bufs[i]);
-        append(mbh.m_buf, mbh.m_offset, mbh.m_length);
+        const BufferSegmentHolder &bsh(m.m_bufs[i]);
+        append(bsh.m_bs, bsh.m_offset, bsh.m_length);
     }
-    for (const auto &mbh : m.m_dbufs)
+    for (const auto &bsh : m.m_dbufs)
     {
-        append(mbh.m_buf, mbh.m_offset, mbh.m_length);
+        append(bsh.m_bs, bsh.m_offset, bsh.m_length);
     }
     return true;
 }
@@ -72,24 +72,24 @@ char Buffer::getByte(size_t offset) const
     size_t startOffset = 0;
     for (size_t i = 0; i < m_numStatic; ++i)
     {
-        const DataSegmentHolder &mbh(m_bufs[i]);
-        if (startOffset + mbh.m_length > offset)
+        const BufferSegmentHolder &bsh(m_bufs[i]);
+        if (startOffset + bsh.m_length > offset)
         {
-            // The byte is in this DataSegmentHolder
-            return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
+            // The byte is in this BufferSegmentHolder
+            return bsh.m_bs->ptr<char>()[offset-startOffset+bsh.m_offset];
         }
-        startOffset += mbh.m_length;
+        startOffset += bsh.m_length;
     }
     if (offset >= startOffset)
     {
-        for (const auto &mbh : m_dbufs)
+        for (const auto &bsh : m_dbufs)
         {
-            if (startOffset + mbh.m_length > offset)
+            if (startOffset + bsh.m_length > offset)
             {
-                // The byte is in this DataSegmentHolder
-                return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
+                // The byte is in this BufferSegmentHolder
+                return bsh.m_bs->ptr<char>()[offset-startOffset+bsh.m_offset];
             }
-            startOffset += mbh.m_length;
+            startOffset += bsh.m_length;
         }
     }
     return byte;
@@ -101,42 +101,42 @@ Buffer Buffer::getData(size_t offset, size_t length) const
     size_t startOffset = 0;
     for (size_t i = 0; i < m_numStatic; ++i)
     {
-        const DataSegmentHolder &mbh(m_bufs[i]);
+        const BufferSegmentHolder &bsh(m_bufs[i]);
         size_t numCopy = 0;
-        size_t newOffset = mbh.m_offset;
-        size_t newLength = mbh.m_length;
-        if (startOffset < offset && startOffset + mbh.m_length > offset)
+        size_t newOffset = bsh.m_offset;
+        size_t newLength = bsh.m_length;
+        if (startOffset < offset && startOffset + bsh.m_length > offset)
         {
             newOffset += offset - startOffset;
             newLength += startOffset - offset;
         }
-        if (startOffset + mbh.m_length > offset)
+        if (startOffset + bsh.m_length > offset)
         {
             numCopy = std::min(length, newLength);
-            m.append(mbh.m_buf, newOffset, numCopy);
+            m.append(bsh.m_bs, newOffset, numCopy);
             length -= numCopy;
         }
-        startOffset += mbh.m_length;
+        startOffset += bsh.m_length;
     }
     if (length > 0)
     {
-        for (const auto &mbh : m_dbufs)
+        for (const auto &bsh : m_dbufs)
         {
             size_t numCopy = 0;
-            size_t newOffset = mbh.m_offset;
-            size_t newLength = mbh.m_length;
-            if (startOffset < offset && startOffset + mbh.m_length > offset)
+            size_t newOffset = bsh.m_offset;
+            size_t newLength = bsh.m_length;
+            if (startOffset < offset && startOffset + bsh.m_length > offset)
             {
                 newOffset += offset - startOffset;
                 newLength += startOffset - offset;
             }
-            if (startOffset + mbh.m_length > offset)
+            if (startOffset + bsh.m_length > offset)
             {
                 numCopy = std::min(length, newLength);
-                m.append(mbh.m_buf, newOffset, numCopy);
+                m.append(bsh.m_bs, newOffset, numCopy);
                 length -= numCopy;
             }
-            startOffset += mbh.m_length;
+            startOffset += bsh.m_length;
         }
     }
     return m;

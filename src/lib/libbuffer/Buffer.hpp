@@ -26,32 +26,32 @@ namespace buffer
  * Additionally, multiple message may share the same
  * DataSegment, but with different length and offset.
  */
-struct DataSegmentHolder
+struct BufferSegmentHolder
 {
-    DataSegmentHolder() {}
-    DataSegmentHolder(const DataSegmentHolder &other)
-        : m_buf(other.m_buf)
+    BufferSegmentHolder() {}
+    BufferSegmentHolder(const BufferSegmentHolder &other)
+        : m_bs(other.m_bs)
         , m_offset(other.m_offset)
         , m_length(other.m_length)
     {}
-    DataSegmentHolder(
-        const ManagedBuffer &buf,
+    BufferSegmentHolder(
+        const BufferSegment &bs,
         size_t offset, size_t length
     )
-        : m_buf(buf)
+        : m_bs(bs)
         , m_offset(offset)
         , m_length(length)
     {}
 
-    DataSegmentHolder& operator=(const DataSegmentHolder &other)
+    BufferSegmentHolder& operator=(const BufferSegmentHolder &other)
     {
-        m_buf = other.m_buf;
+        m_bs = other.m_bs;
         m_offset = other.m_offset;
         m_length = other.m_length;
         return *this;
     }
 
-    ManagedBuffer m_buf;
+    BufferSegment m_bs;
     size_t m_offset;
     size_t m_length;
 };
@@ -72,18 +72,18 @@ public:
     Buffer& operator=(const Buffer &rhs);
 
     /**
-     * Append the provided DataSegment with the provided
+     * Append the provided BufferSegment with the provided
      * offset and length to this Buffer.
      */
     bool append(
-        const ManagedBuffer &mb,
+        const BufferSegment &ms,
         size_t offset, size_t length
     );
     /**
-     * Append the entire provided DataSegment (that is,
+     * Append the entire provided BufferSegment (that is,
      * offset = 0 and length = mb.size()) to this Buffer.
      */
-    bool append(const ManagedBuffer &mb);
+    bool append(const BufferSegment &ms);
     /**
      * Append the entire provided Buffer to this Buffer.
      */
@@ -103,9 +103,9 @@ public:
 
 private:
     static const size_t NUM_STATIC = 5;
-    DataSegmentHolder m_bufs[NUM_STATIC];
+    BufferSegmentHolder m_bufs[NUM_STATIC];
     size_t m_numStatic;
-    std::deque<DataSegmentHolder> m_dbufs;
+    std::deque<BufferSegmentHolder> m_dbufs;
 };
 
 }; // namespace message
