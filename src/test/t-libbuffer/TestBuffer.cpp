@@ -1,25 +1,25 @@
-#include "TestMessage.hpp"
-#include "libmessage/Message.hpp"
-#include "libmessage/BasicMessageBufferAllocationStrategy.hpp"
-#include "libmessage/MessageBufferFactory.hpp"
+#include "TestBuffer.hpp"
+#include "libbuffer/Buffer.hpp"
+#include "libbuffer/BasicBufferSegmentAllocationStrategy.hpp"
+#include "libbuffer/BufferSegmentFactory.hpp"
 #include <thread>
 #include <chrono>
 
-using namespace message;
+using namespace buffer;
 
-void TestMessage::SetUp()
+void TestBuffer::SetUp()
 {}
 
-void TestMessage::TearDown()
+void TestBuffer::TearDown()
 {}
 
-TEST_F(TestMessage, TestSingleAppend)
+TEST_F(TestBuffer, TestSingleAppend)
 {
     std::string str("dfahlsjfhsad");
-    BasicMessageBufferAllocationStrategy strategy;
-    MessageBufferFactory bufFac(strategy);
-    Message m;
-    std::shared_ptr<MessageBuffer> mb(bufFac.allocate(str.length()));
+    BasicBufferSegmentAllocationStrategy strategy;
+    BufferSegmentFactory bufFac(strategy);
+    Buffer m;
+    std::shared_ptr<DataSegment> mb(bufFac.allocate(str.length()));
     memcpy(mb->ptr<void>(), str.c_str(), str.length());
     m.append(mb);
     for (size_t i = 0; i < str.length(); ++i)
@@ -28,17 +28,17 @@ TEST_F(TestMessage, TestSingleAppend)
     }
 }
 
-TEST_F(TestMessage, TestManyAppend)
+TEST_F(TestBuffer, TestManyAppend)
 {
     const char *str = "dafhldsahf";
     const char *strStart = str;
     size_t len = strlen(str);
-    BasicMessageBufferAllocationStrategy strategy;
-    MessageBufferFactory bufFac(strategy);
-    Message m;
+    BasicBufferSegmentAllocationStrategy strategy;
+    BufferSegmentFactory bufFac(strategy);
+    Buffer m;
     for (size_t i = 0; i < len; ++i)
     {
-        std::shared_ptr<MessageBuffer> mb(bufFac.allocate(1));
+        std::shared_ptr<DataSegment> mb(bufFac.allocate(1));
         memcpy(mb->ptr<void>(), str++, 1);
         m.append(mb);
     }
@@ -48,20 +48,20 @@ TEST_F(TestMessage, TestManyAppend)
     }
 }
 
-TEST_F(TestMessage, TestSingleGetData)
+TEST_F(TestBuffer, TestSingleGetData)
 {
     std::string str("dfahlsjfhsad");
-    BasicMessageBufferAllocationStrategy strategy;
-    MessageBufferFactory bufFac(strategy);
-    Message m;
-    std::shared_ptr<MessageBuffer> mb(bufFac.allocate(str.length()));
+    BasicBufferSegmentAllocationStrategy strategy;
+    BufferSegmentFactory bufFac(strategy);
+    Buffer m;
+    std::shared_ptr<DataSegment> mb(bufFac.allocate(str.length()));
     memcpy(mb->ptr<void>(), str.c_str(), str.length());
     m.append(mb);
     for (size_t i = 0; i < str.length(); ++i)
     {
         for (size_t j = 0; i+j < str.length(); ++j)
         {
-            Message m2(m.getData(i, j));
+            Buffer m2(m.getData(i, j));
             for (size_t k = 0; k < j; ++k)
             {
                 ASSERT_EQ(m2.getByte(k), str[i+k]);
@@ -70,16 +70,16 @@ TEST_F(TestMessage, TestSingleGetData)
     }
 }
 
-TEST_F(TestMessage, TestManyGetData)
+TEST_F(TestBuffer, TestManyGetData)
 {
     const char *str = "dafhldsahf";
     size_t len = strlen(str);
-    BasicMessageBufferAllocationStrategy strategy;
-    MessageBufferFactory bufFac(strategy);
-    Message m;
+    BasicBufferSegmentAllocationStrategy strategy;
+    BufferSegmentFactory bufFac(strategy);
+    Buffer m;
     for (size_t i = 0; i < len; ++i)
     {
-        std::shared_ptr<MessageBuffer> mb(bufFac.allocate(1));
+        std::shared_ptr<DataSegment> mb(bufFac.allocate(1));
         memcpy(mb->ptr<void>(), str+i, 1);
         m.append(mb);
     }
@@ -87,7 +87,7 @@ TEST_F(TestMessage, TestManyGetData)
     {
         for (size_t j = 0; i+j < len; ++j)
         {
-            Message m2(m.getData(i, j));
+            Buffer m2(m.getData(i, j));
             for (size_t k = 0; k < j; ++k)
             {
                 ASSERT_EQ(m2.getByte(k), m.getByte(i+k));

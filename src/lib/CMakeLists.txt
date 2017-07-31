@@ -1,2 +1,2 @@
 add_subdirectory(libcommon)
-add_subdirectory(libmessage)
+add_subdirectory(libbuffer)

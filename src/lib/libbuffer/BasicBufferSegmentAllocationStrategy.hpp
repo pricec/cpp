@@ -1,18 +1,18 @@
-/** \brief Basic Message Buffer Allocation strategy
+/** \brief Basic Buffer Buffer Allocation strategy
  *
- *  This class implements IMessageBufferAllocationStrategy
+ *  This class implements IBufferSegmentAllocationStrategy
  *  in the simplest way possible; a call to allocate simply
  *  calls malloc and returns the resulting void*.
  */
 #pragma once
 
-#include "libmessage/IMessageBufferAllocationStrategy.hpp"
+#include "libbuffer/IBufferSegmentAllocationStrategy.hpp"
 
-namespace message
+namespace buffer
 {
 
-class BasicMessageBufferAllocationStrategy :
-        public IMessageBufferAllocationStrategy
+class BasicBufferSegmentAllocationStrategy :
+        public IBufferSegmentAllocationStrategy
 {
 public:
     void* allocate(size_t size)

@@ -1,4 +1,4 @@
-/** \brief Message Buffer Allocation Strategy interface
+/** \brief Buffer Segment Allocation Strategy interface
  *
  *  Since message buffers will be allocated quite frequently,
  *  some kind of pooling strategy may be required to reduce
@@ -8,17 +8,17 @@
 #pragma once
 #include <memory>
 
-#include "libmessage/MessageBuffer.hpp"
+#include "libbuffer/DataSegment.hpp"
 
-namespace message
+namespace buffer
 {
 
-class IMessageBufferAllocationStrategy
+class IBufferSegmentAllocationStrategy
 {
 public:
-    virtual ~IMessageBufferAllocationStrategy() {};
+    virtual ~IBufferSegmentAllocationStrategy() {};
     virtual void* allocate(size_t size) = 0;
     virtual void deallocate(void *buf) = 0;
 };
 
-}; //namespace mssage
+}; //namespace

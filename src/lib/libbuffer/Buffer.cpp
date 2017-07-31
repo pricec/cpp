@@ -1,33 +1,33 @@
-#include "Message.hpp"
+#include "Buffer.hpp"
 
-using namespace message;
+using namespace buffer;
 
-Message::Message()
+Buffer::Buffer()
     : m_numStatic(0)
 {}
 
-Message::Message(const Message &other)
+Buffer::Buffer(const Buffer &other)
     : m_numStatic(0)
 {
     *this = other;
 }
 
-Message::~Message()
+Buffer::~Buffer()
 {}
 
-Message& Message::operator=(const Message &rhs)
+Buffer& Buffer::operator=(const Buffer &rhs)
 {
     m_numStatic = rhs.m_numStatic;
     for (size_t i = 0; i < m_numStatic; ++i)
     {
         m_bufs[i] = rhs.m_bufs[i];
     }
-    std::deque<MessageBufferHolder> otherBufs(rhs.m_dbufs);
+    std::deque<DataSegmentHolder> otherBufs(rhs.m_dbufs);
     m_dbufs.swap(otherBufs);
     return *this;
 }
 
-bool Message::append(
+bool Buffer::append(
     const ManagedBuffer &mb,
     size_t offset,
     size_t length
@@ -35,7 +35,7 @@ bool Message::append(
 {
     if (m_dbufs.empty() && m_numStatic < NUM_STATIC)
     {
-        MessageBufferHolder &buf(m_bufs[m_numStatic++]);
+        DataSegmentHolder &buf(m_bufs[m_numStatic++]);
         buf.m_buf = mb;
         buf.m_offset = offset;
         buf.m_length = length;
@@ -47,16 +47,16 @@ bool Message::append(
     return true;
 }
 
-bool Message::append(const ManagedBuffer &mb)
+bool Buffer::append(const ManagedBuffer &mb)
 {
     return append(mb, 0, mb->size());
 }
 
-bool Message::append(const Message &m)
+bool Buffer::append(const Buffer &m)
 {
     for (size_t i = 0; i < m.m_numStatic; ++i)
     {
-        const MessageBufferHolder &mbh(m.m_bufs[i]);
+        const DataSegmentHolder &mbh(m.m_bufs[i]);
         append(mbh.m_buf, mbh.m_offset, mbh.m_length);
     }
     for (const auto &mbh : m.m_dbufs)
@@ -66,16 +66,16 @@ bool Message::append(const Message &m)
     return true;
 }
 
-char Message::getByte(size_t offset) const
+char Buffer::getByte(size_t offset) const
 {
     char byte = '\0';
     size_t startOffset = 0;
     for (size_t i = 0; i < m_numStatic; ++i)
     {
-        const MessageBufferHolder &mbh(m_bufs[i]);
+        const DataSegmentHolder &mbh(m_bufs[i]);
         if (startOffset + mbh.m_length > offset)
         {
-            // The byte is in this MessageBufferHolder
+            // The byte is in this DataSegmentHolder
             return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
         }
         startOffset += mbh.m_length;
@@ -86,7 +86,7 @@ char Message::getByte(size_t offset) const
         {
             if (startOffset + mbh.m_length > offset)
             {
-                // The byte is in this MessageBufferHolder
+                // The byte is in this DataSegmentHolder
                 return mbh.m_buf->ptr<char>()[offset-startOffset+mbh.m_offset];
             }
             startOffset += mbh.m_length;
@@ -95,13 +95,13 @@ char Message::getByte(size_t offset) const
     return byte;
 }
 
-Message Message::getData(size_t offset, size_t length) const
+Buffer Buffer::getData(size_t offset, size_t length) const
 {
-    Message m;
+    Buffer m;
     size_t startOffset = 0;
     for (size_t i = 0; i < m_numStatic; ++i)
     {
-        const MessageBufferHolder &mbh(m_bufs[i]);
+        const DataSegmentHolder &mbh(m_bufs[i]);
         size_t numCopy = 0;
         size_t newOffset = mbh.m_offset;
         size_t newLength = mbh.m_length;

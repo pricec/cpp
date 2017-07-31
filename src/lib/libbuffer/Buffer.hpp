@@ -1,4 +1,4 @@
-/** \brief Message class
+/** \brief Buffer class
  *
  *  This class is for holding bytes of data, presumably
  *  part of some kind of message being passed from one
@@ -12,29 +12,29 @@
 #pragma once
 #include <deque>
 
-#include "MessageBufferFactory.hpp"
-#include "MessageBuffer.hpp"
+#include "BufferSegmentFactory.hpp"
+#include "DataSegment.hpp"
 
-namespace message
+namespace buffer
 {
 
 /**
  * This struct is meant to hold a message buffer, together
  * with an offset and a length. This is because messages
  * will potentially be sliced up in different ways, and
- * we may need to refer to only part of a MessageBuffer.
+ * we may need to refer to only part of a DataSegment.
  * Additionally, multiple message may share the same
- * MessageBuffer, but with different length and offset.
+ * DataSegment, but with different length and offset.
  */
-struct MessageBufferHolder
+struct DataSegmentHolder
 {
-    MessageBufferHolder() {}
-    MessageBufferHolder(const MessageBufferHolder &other)
+    DataSegmentHolder() {}
+    DataSegmentHolder(const DataSegmentHolder &other)
         : m_buf(other.m_buf)
         , m_offset(other.m_offset)
         , m_length(other.m_length)
     {}
-    MessageBufferHolder(
+    DataSegmentHolder(
         const ManagedBuffer &buf,
         size_t offset, size_t length
     )
@@ -43,7 +43,7 @@ struct MessageBufferHolder
         , m_length(length)
     {}
 
-    MessageBufferHolder& operator=(const MessageBufferHolder &other)
+    DataSegmentHolder& operator=(const DataSegmentHolder &other)
     {
         m_buf = other.m_buf;
         m_offset = other.m_offset;
@@ -56,38 +56,38 @@ struct MessageBufferHolder
     size_t m_length;
 };
 
-class Message
+class Buffer
 {
 public:
-    Message();
-    Message(const Message &other);
-    ~Message();
+    Buffer();
+    Buffer(const Buffer &other);
+    ~Buffer();
 
     /**
      * The equals operator simply makes a read-only
-     * shallow copy of the Message. Refcounts are adjusted
+     * shallow copy of the Buffer. Refcounts are adjusted
      * so that the underlying buffer cannot be freed before
-     * both the copy and the original Message are deleted.
+     * both the copy and the original Buffer are deleted.
      */
-    Message& operator=(const Message &rhs);
+    Buffer& operator=(const Buffer &rhs);
 
     /**
-     * Append the provided MessageBuffer with the provided
-     * offset and length to this Message.
+     * Append the provided DataSegment with the provided
+     * offset and length to this Buffer.
      */
     bool append(
         const ManagedBuffer &mb,
         size_t offset, size_t length
     );
     /**
-     * Append the entire provided MessageBuffer (that is,
-     * offset = 0 and length = mb.size()) to this Message.
+     * Append the entire provided DataSegment (that is,
+     * offset = 0 and length = mb.size()) to this Buffer.
      */
     bool append(const ManagedBuffer &mb);
     /**
-     * Append the entire provided Message to this Message.
+     * Append the entire provided Buffer to this Buffer.
      */
-    bool append(const Message &m);
+    bool append(const Buffer &m);
 
     /**
      * Get the byte at the specified offset, as a character.
@@ -95,17 +95,17 @@ public:
     char getByte(size_t offset) const;
 
     /**
-     * Get a new Message whose data is equal to this Message
+     * Get a new Buffer whose data is equal to this Buffer
      * starting at the provided offset and for the provided
      * length.
      */
-    Message getData(size_t offset, size_t length) const;
+    Buffer getData(size_t offset, size_t length) const;
 
 private:
     static const size_t NUM_STATIC = 5;
-    MessageBufferHolder m_bufs[NUM_STATIC];
+    DataSegmentHolder m_bufs[NUM_STATIC];
     size_t m_numStatic;
-    std::deque<MessageBufferHolder> m_dbufs;
+    std::deque<DataSegmentHolder> m_dbufs;
 };
 
 }; // namespace message
