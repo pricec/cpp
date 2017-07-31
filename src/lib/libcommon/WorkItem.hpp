@@ -21,6 +21,7 @@ private:
     std::mutex m_mtx;
     std::deque< std::function<void(void)> > m_q;
     WorkQueue &m_wq;
+    bool m_onQ;
 }; // name WorkItem
 
 }; // namespace common
