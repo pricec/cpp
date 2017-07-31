@@ -2,6 +2,7 @@ add_executable(
   t-libbuffer
   t-libbuffer.cpp
   TestBuffer.cpp
+  TestLocklessRingBuffer.cpp
 )
 
 add_test(
