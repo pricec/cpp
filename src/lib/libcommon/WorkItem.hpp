@@ -11,7 +11,8 @@ namespace common
 class WorkItem : public IWorkItem
 {
 public:
-    WorkItem(WorkQueue &wq);
+    WorkItem(int n);
+    WorkItem(WorkQueue *wq);
     ~WorkItem();
 
     void run() override;
@@ -20,7 +21,8 @@ public:
 private:
     std::mutex m_mtx;
     std::deque< std::function<void(void)> > m_q;
-    WorkQueue &m_wq;
+    WorkQueue *m_wq;
+    bool m_ownQ;
     bool m_onQ;
 }; // name WorkItem
 

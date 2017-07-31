@@ -15,7 +15,7 @@ TEST_F(TestWorkQueue, TestJobsAreExecuted)
     std::mutex mtx;
     std::condition_variable cv;
     common::WorkQueue wq(1);
-    common::WorkItem wi(wq);
+    common::WorkItem wi(&wq);
     int waiting = n;
     for (int i = 0; i < n; ++i)
     {
@@ -47,8 +47,7 @@ TEST_F(TestWorkQueue, TestJobsExecutedInParallel)
     std::mutex mtx;
     std::condition_variable cv;
     bool notified[2] = {false, false};
-    common::WorkQueue wq(2);
-    common::WorkItem wi(wq);
+    common::WorkItem wi(2);
     wi.defer(
         [&mtx, &cv, &notified] ()
         {
@@ -83,7 +82,6 @@ TEST_F(TestWorkQueue, TestJobsExecutedInParallel)
             cv.notify_all();
         }
     );
-    wq.start();
 
     std::unique_lock<std::mutex> lock(mtx);
     cv.wait(
