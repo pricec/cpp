@@ -11,7 +11,7 @@ namespace common
 class WorkItem : public IWorkItem
 {
 public:
-    WorkItem(int n);
+    WorkItem(size_t n);
     WorkItem(WorkQueue *wq);
     ~WorkItem();
 

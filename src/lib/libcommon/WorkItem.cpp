@@ -2,7 +2,7 @@
 
 using namespace common;
 
-WorkItem::WorkItem(int n)
+WorkItem::WorkItem(size_t n)
     : m_wq(new WorkQueue(n))
     , m_ownQ(true)
     , m_onQ(false)
