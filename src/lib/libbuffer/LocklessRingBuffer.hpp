@@ -16,8 +16,9 @@ template<typename T>
 class LocklessRingBuffer
 {
 public:
-    LocklessRingBuffer(size_t size)
-        : m_size(size)
+    explicit LocklessRingBuffer(size_t size)
+        : m_items()
+        , m_size(size)
         , m_head(0)
         , m_tail(0)
         , m_empty(true)
@@ -25,8 +26,18 @@ public:
         m_items.reserve(m_size);
     }
 
+    LocklessRingBuffer(const LocklessRingBuffer &other)
+        : m_items(other.m_items)
+        , m_size(other.m_size)
+        , m_head(other.m_head)
+        , m_tail(other.m_tail)
+        , m_empty(other.m_empty)
+    {
+    }
+
     ~LocklessRingBuffer()
-    {}
+    {
+    }
 
     /**
      * Insert the argument item. Returns true if
@@ -44,9 +55,16 @@ public:
             return false;
         }
 
-        m_items[m_head] = item;
-        m_empty = false;
+        if (m_head < m_items.size())
+        {
+            m_items[m_head] = item;
+        }
+        else
+        {
+            m_items.emplace_back(item);
+        }
         m_head = (m_head + 1) % m_size;
+        m_empty = false;
         return true;
     }
 
