@@ -40,11 +40,15 @@ PipelineManager::PipelineManager(
     defer(
         [this] ()
         {
-            while (!m_wantExit)
+            while (true)
             {
                 m_buffers[m_buffers.size()-1].next();
                 PipelineStruct ps(m_active.back());
                 m_active.pop_back();
+                if (m_wantExit)
+                {
+                    break;
+                }
                 if (m_cb)
                 {
                     m_cb(ps);
@@ -99,7 +103,7 @@ void PipelineManager::runStage(
     }
 }
 
-const common::UUID& PipelineManager::submit(const buffer::Buffer &buf)
+common::UUID PipelineManager::submit(const buffer::Buffer &buf)
 {
     std::lock_guard<std::mutex> lock(m_mtx);
     m_active.emplace_front(buf);

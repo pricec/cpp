@@ -88,7 +88,7 @@ public:
      * you receive a callback, the m_uuid field of the corresponding
      * PipelineStruct will be populated with this value.
      */
-    const common::UUID& submit(const buffer::Buffer &buf);
+    common::UUID submit(const buffer::Buffer &buf);
 
 private:
     void runStage(
