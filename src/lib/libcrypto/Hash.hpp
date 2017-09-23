@@ -4,6 +4,10 @@
 namespace crypto
 {
 
+static const char *MD5 = "md5";
+static const char *SHA256 = "sha256";
+static const char *SHA512 = "sha512";
+
 int ComputeHash(const char *type, const std::string& input, std::string& hash)
 {
     EVP_MD_CTX *ctx;
