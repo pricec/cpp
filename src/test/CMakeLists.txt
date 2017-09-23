@@ -1,3 +1,4 @@
 add_subdirectory(t-libcommon)
 add_subdirectory(t-libbuffer)
 add_subdirectory(t-libpipeline)
+add_subdirectory(t-libcrypto)
