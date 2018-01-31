@@ -24,7 +24,7 @@ public:
 
     ~DataSegment() { m_strategy.deallocate(m_buf); }
     template<typename T> T* ptr() { return static_cast<T*>(m_buf); }
-    size_t size() { return m_size; }
+    size_t size() const { return m_size; }
 
 private:
     IBufferSegmentAllocationStrategy &m_strategy;

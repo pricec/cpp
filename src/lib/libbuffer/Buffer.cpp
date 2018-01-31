@@ -12,6 +12,12 @@ Buffer::Buffer(const Buffer &other)
     *this = other;
 }
 
+Buffer::Buffer(const BufferSegment &bs)
+    : m_numStatic(0)
+{
+    this->append(bs, 0, bs->size());
+}
+
 Buffer::~Buffer()
 {}
 
@@ -25,6 +31,21 @@ Buffer& Buffer::operator=(const Buffer &rhs)
     std::deque<BufferSegmentHolder> otherBufs(rhs.m_dbufs);
     m_dbufs.swap(otherBufs);
     return *this;
+}
+
+size_t Buffer::length() const
+{
+    size_t length = 0;
+    for (size_t i = 0; i < m_numStatic; ++i)
+    {
+        const BufferSegmentHolder &bsh(m_bufs[i]);
+        length += bsh.m_length;
+    }
+    for (const auto &bsh : m_dbufs)
+    {
+        length += bsh.m_length;
+    }
+    return length;
 }
 
 bool Buffer::append(

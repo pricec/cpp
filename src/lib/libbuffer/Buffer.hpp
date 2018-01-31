@@ -61,6 +61,7 @@ class Buffer
 public:
     Buffer();
     Buffer(const Buffer &other);
+    Buffer(const BufferSegment &bs);
     ~Buffer();
 
     /**
@@ -70,6 +71,11 @@ public:
      * both the copy and the original Buffer are deleted.
      */
     Buffer& operator=(const Buffer &rhs);
+
+    /**
+     * Return the total length of this buffer.
+     */
+    size_t length() const;
 
     /**
      * Append the provided BufferSegment with the provided
