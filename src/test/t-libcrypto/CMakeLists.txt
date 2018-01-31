@@ -12,7 +12,6 @@ add_test(
 target_link_libraries(
   t-libcrypto
   crypt
-  crypto
   gtest
   gtest_main
   pthread
