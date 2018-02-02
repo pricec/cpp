@@ -4,6 +4,7 @@
  * either incoming from a netlink socket, or intended
  * to be transmitted to the kernel via a netlink socket.
  */
+#pragma once
 #include "libbuffer/Buffer.hpp"
 #include "libbuffer/BufferSegmentFactory.hpp"
 #include <linux/netlink.h>
@@ -27,6 +28,8 @@ public:
     ~NetlinkMessage();
 
     NetlinkMessage& operator=(const NetlinkMessage &rhs);
+
+
 
 private:
     buffer::Buffer m_hdr;

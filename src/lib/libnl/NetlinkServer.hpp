@@ -9,6 +9,7 @@
  * of execution), and message passing is handled via a
  * callback interface.
  */
+#pragma once
 #include <functional>
 #include <map>
 #include "libcommon/WorkItem.hpp"

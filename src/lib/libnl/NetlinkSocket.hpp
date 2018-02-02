@@ -5,6 +5,7 @@
  * employs an RAII pattern to make managing sockets as
  * simple as possible.
  */
+#pragma once
 #include <stdint.h>
 #include <linux/netlink.h>
 #include <sys/socket.h>
