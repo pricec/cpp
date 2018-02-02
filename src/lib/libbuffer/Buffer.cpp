@@ -146,6 +146,7 @@ Buffer Buffer::getData(size_t offset, size_t length) const
         }
         startOffset += bsh.m_length;
     }
+
     if (length > 0)
     {
         for (const auto &bsh : m_dbufs)
@@ -202,9 +203,9 @@ void Buffer::flatten(
             spot += bsh.m_length;
         }
 
-        this->clear();
-        this->append(start);
-        this->append(bs);
-        this->append(end);
+        clear();
+        append(start);
+        append(bs);
+        append(end);
     }
 }
