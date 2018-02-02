@@ -78,6 +78,11 @@ public:
     size_t length() const;
 
     /**
+     * Empty the buffer.
+     */
+    void clear();
+
+    /**
      * Append the provided BufferSegment with the provided
      * offset and length to this Buffer.
      */
@@ -85,11 +90,13 @@ public:
         const BufferSegment &ms,
         size_t offset, size_t length
     );
+
     /**
      * Append the entire provided BufferSegment (that is,
      * offset = 0 and length = mb.size()) to this Buffer.
      */
     bool append(const BufferSegment &ms);
+
     /**
      * Append the entire provided Buffer to this Buffer.
      */
@@ -106,6 +113,18 @@ public:
      * length.
      */
     Buffer getData(size_t offset, size_t length) const;
+
+    /**
+     * Flatten the buffer starting at offset for length. This
+     * means that that bytes contained in the buffer from offset
+     * to offset + length will be contained in precisely one
+     * underlying memory segment.
+     */
+    void flatten(BufferSegmentFactory &bufFac, size_t offset, size_t length);
+    void flatten(BufferSegmentFactory &bufFac)
+    {
+        return flatten(bufFac, 0, this->length());
+    }
 
 private:
     static const size_t NUM_STATIC = 5;

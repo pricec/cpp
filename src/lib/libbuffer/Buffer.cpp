@@ -1,4 +1,5 @@
 #include "Buffer.hpp"
+#include <string.h>
 
 using namespace buffer;
 
@@ -46,6 +47,12 @@ size_t Buffer::length() const
         length += bsh.m_length;
     }
     return length;
+}
+
+void Buffer::clear()
+{
+    m_numStatic = 0;
+    m_dbufs.clear();
 }
 
 bool Buffer::append(
@@ -161,4 +168,43 @@ Buffer Buffer::getData(size_t offset, size_t length) const
         }
     }
     return m;
+}
+
+void Buffer::flatten(
+    BufferSegmentFactory &bufFac, size_t offset, size_t length
+) {
+    Buffer buf(getData(offset,length));
+    if (buf.m_numStatic + m_dbufs.size() > 1)
+    {
+        Buffer start(getData(0, offset));
+        Buffer end(getData(offset + length, this->length()));
+
+        int spot = 0;
+        BufferSegment bs(bufFac.allocate(length));
+        for (size_t i = 0; i < m_numStatic; ++i)
+        {
+            auto const &bsh(m_bufs[i]);
+            ::memcpy(
+                bs->ptr<void>(),
+                bsh.m_bs->ptr<char>() + bsh.m_offset,
+                bsh.m_length
+            );
+            spot += bsh.m_length;
+        }
+
+        for (auto const &bsh : m_dbufs)
+        {
+            ::memcpy(
+                bs->ptr<void>(),
+                bsh.m_bs->ptr<char>() + bsh.m_offset,
+                bsh.m_length
+            );
+            spot += bsh.m_length;
+        }
+
+        this->clear();
+        this->append(start);
+        this->append(bs);
+        this->append(end);
+    }
 }
