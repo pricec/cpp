@@ -7,17 +7,48 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-#include <stdio.h>
-
 using namespace netlink;
 
 NetlinkServer::NetlinkServer(buffer::BufferSegmentFactory &bufFac)
     : common::WorkItem(1)
+    , m_running(false)
     , m_bufFac(bufFac)
+    , m_donefd(0)
+    , m_epollfd(0)
+    , m_sockets()
+    , m_rx_cb([] (NetlinkMessage msg) {})
+{}
+
+NetlinkServer::~NetlinkServer()
 {
-    // TODO: error checking (rewrite this library)
+    if (m_running)
+    {
+        stop();
+    }
+}
+
+bool NetlinkServer::start()
+{
+    if (m_running)
+    {
+        return true;
+    }
+
     m_donefd  = ::eventfd(0, 0);
+    if (m_donefd < 1)
+    {
+        return false;
+    }
+
     m_epollfd = ::epoll_create1(0);
+    if (m_epollfd < 1)
+    {
+        ::close(m_donefd);
+        m_donefd = 0;
+        return false;
+    }
+
+    m_running = true;
 
     struct epoll_event ev;
     ev.events = EPOLLIN;
@@ -25,25 +56,19 @@ NetlinkServer::NetlinkServer(buffer::BufferSegmentFactory &bufFac)
 
     epoll_ctl(m_epollfd, EPOLL_CTL_ADD, m_donefd, &ev);
 
-    m_rx_cb = [] (NetlinkMessage msg) {};
-}
-
-NetlinkServer::~NetlinkServer()
-{
-    if (m_donefd > 0)
-    {
-        ::write(m_donefd, 0, sizeof(int));
-        ::close(m_donefd);
-    }
-    if (m_epollfd > 0)
-    {
-        ::close(m_epollfd);
-    }
-}
-
-void NetlinkServer::start()
-{
     defer([this] () { this->worker(); });
+    return true;
+}
+
+bool NetlinkServer::stop()
+{
+    if (m_running)
+    {
+        uint64_t val = 1;
+        ::write(m_donefd, &val, sizeof(uint64_t));
+        m_running = false;
+    }
+    return true;
 }
 
 void NetlinkServer::set_rx_cb(std::function<void(NetlinkMessage)> f)
@@ -95,20 +120,18 @@ void NetlinkServer::worker()
 
     while (true)
     {
-        printf("waiting for epoll\n");
         int nfds = epoll_wait(m_epollfd, events, s_max_events, -1);
-        printf("got epoll notification\n");
         if (nfds == -1)
         {
             // TODO: log this?
-            return;
+            goto cleanup;
         }
 
         for (int i = 0; i < nfds; ++i)
         {
             if (events[i].data.fd == m_donefd)
             {
-                return;
+                goto cleanup;
             }
 
             ssize_t n = ::read(events[i].data.fd, recv_buf, s_buf_size);
@@ -117,4 +140,8 @@ void NetlinkServer::worker()
             m_rx_cb(NetlinkMessage(buf));
         }
     }
+
+cleanup:
+    if (m_donefd > 0)  { ::close(m_donefd);  m_donefd = 0;  }
+    if (m_epollfd > 0) { ::close(m_epollfd); m_epollfd = 0; }
 }

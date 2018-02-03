@@ -48,7 +48,22 @@ public:
     /**
      * Start the server running.
      */
-    void start();
+    bool start();
+
+    /**
+     * Stop the server. At present, there are a few minor
+     * race conditions possible between start and stop.
+     * Fortunately most issues are handled by the fact
+     * that we are using our own WorkQueue; the WorkQueue
+     * will wait for the worker thread to return (which
+     * ensures the necessary cleanup) before the destructor
+     * exits.
+     *
+     * NOTE: be careful when making changes to accept
+     *       a WorkQueue into the constructor; this may
+     *       introduce race conditions.
+     */
+    bool stop();
 
     /**
      * Set the callback function that will be invoked for
@@ -77,12 +92,13 @@ private:
     void worker();
 
 private:
+    static const uint16_t               s_max_events = 10;
+    static const uint32_t               s_buf_size   = 32768;
+    bool                                m_running;
     buffer::BufferSegmentFactory       &m_bufFac;
     int                                 m_donefd;
     int                                 m_epollfd;
     std::map<int, NetlinkSocket>        m_sockets; // netlink_family -> sockfd
-    static const uint16_t               s_max_events = 10;
-    static const uint32_t               s_buf_size   = 32768;
     std::function<void(NetlinkMessage)> m_rx_cb;
 };
 
