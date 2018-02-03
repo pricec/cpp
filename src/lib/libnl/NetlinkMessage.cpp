@@ -23,3 +23,9 @@ NetlinkMessage& NetlinkMessage::operator=(const NetlinkMessage &rhs)
     this->m_body = rhs.m_body;
     return *this;
 }
+
+const struct nlmsghdr* NetlinkMessage::header(
+    buffer::BufferSegmentFactory &bufFac
+) {
+    return m_hdr.getDataAs<struct nlmsghdr>(bufFac, 0, m_hdr.length());
+}
