@@ -134,10 +134,34 @@ void NetlinkServer::worker()
                 goto cleanup;
             }
 
-            ssize_t n = ::read(events[i].data.fd, recv_buf, s_buf_size);
-            auto buf(m_bufFac.allocate(n));
-            memcpy(buf->ptr<void>(), recv_buf, n);
-            m_rx_cb(NetlinkMessage(buf));
+            struct iovec iov = { recv_buf, s_buf_size };
+            struct sockaddr_nl sa;
+            struct msghdr msg;
+            struct nlmsghdr *nh;
+
+            msg = { &sa, sizeof(sa), &iov, 1, NULL, 0, 0 };
+            ssize_t n = ::recvmsg(events[i].data.fd, &msg, 0);
+
+            for (
+                nh = (struct nlmsghdr *)recv_buf;
+                NLMSG_OK(nh, n);
+                nh = NLMSG_NEXT(nh, n)
+            ) {
+                if (nh->nlmsg_type == NLMSG_DONE)
+                {
+                    break;
+                }
+
+                if (nh->nlmsg_type == NLMSG_ERROR)
+                {
+                    //TODO: error handling
+                    continue;
+                }
+
+                auto buf(m_bufFac.allocate(nh->nlmsg_len));
+                memcpy(buf->ptr<void>(), nh, nh->nlmsg_len);
+                m_rx_cb(NetlinkMessage(buf));
+            }
         }
     }
 

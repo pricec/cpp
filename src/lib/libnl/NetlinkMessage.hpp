@@ -35,19 +35,8 @@ public:
      */
     const struct nlmsghdr* header(buffer::BufferSegmentFactory &bufFac);
 
-    /**
-     * Get the body (at the specified offset) as
-     * a const pointer to the template type.
-     */
-    template <typename T>
-    const T* bodyAs(buffer::BufferSegmentFactory &bufFac, size_t offset)
-    {
-        return m_body.getDataAs<T>(bufFac, offset, sizeof(T));
-    }
-
 private:
-    buffer::Buffer m_hdr;
-    buffer::Buffer m_body;
+    buffer::Buffer m_msg;
 };
 
 }

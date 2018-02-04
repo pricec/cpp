@@ -77,6 +77,10 @@ public:
      * and groups. Any messages originating from the kernel
      * with this signature will result in an invocation of
      * the rx callback.
+     *
+     * NOTE: You MUST call this function after calling
+     *       start. Whenever you call stop, all listeners
+     *       are lost.
      */
     void listen(int netlink_family, uint32_t groups);
 
