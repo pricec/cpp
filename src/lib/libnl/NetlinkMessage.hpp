@@ -23,20 +23,26 @@ public:
      * socket into a buffer allocated using a the buffer
      * segment factory provided by libbuffer.
      */
-    NetlinkMessage(const buffer::Buffer &buf);
+    NetlinkMessage(
+        buffer::BufferSegmentFactory &bufFac,
+        const buffer::Buffer &buf
+    );
     NetlinkMessage(const NetlinkMessage &other);
-    ~NetlinkMessage();
+    virtual ~NetlinkMessage();
 
-    NetlinkMessage& operator=(const NetlinkMessage &rhs);
+    virtual NetlinkMessage& operator=(const NetlinkMessage &rhs);
 
     /**
      * Get a pointer to the const header, casted into a
      * nlmsghdr for easy use.
      */
-    const struct nlmsghdr* header(buffer::BufferSegmentFactory &bufFac);
+    const struct nlmsghdr* header();
 
-private:
-    buffer::Buffer m_msg;
+    const buffer::Buffer buffer() const { return m_msg; }
+
+protected:
+    buffer::Buffer         m_msg;
+    const struct nlmsghdr *m_hdr;
 };
 
 }

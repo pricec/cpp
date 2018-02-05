@@ -4,8 +4,15 @@
 
 using namespace netlink;
 
-NetlinkMessage::NetlinkMessage(const buffer::Buffer &buf) {
-    m_msg = buf;
+NetlinkMessage::NetlinkMessage(
+    buffer::BufferSegmentFactory &bufFac,
+    const buffer::Buffer &buf
+)
+    : m_msg(buf)
+{
+    m_msg.flatten(bufFac);
+    m_hdr = m_msg.getDataAs<struct nlmsghdr>(
+        bufFac, 0, sizeof(struct nlmsghdr));
 }
 
 NetlinkMessage::NetlinkMessage(const NetlinkMessage &other)
@@ -19,11 +26,11 @@ NetlinkMessage::~NetlinkMessage()
 NetlinkMessage& NetlinkMessage::operator=(const NetlinkMessage &rhs)
 {
     this->m_msg = rhs.m_msg;
+    this->m_hdr = rhs.m_hdr;
     return *this;
 }
 
-const struct nlmsghdr* NetlinkMessage::header(
-    buffer::BufferSegmentFactory &bufFac
-) {
-    return m_msg.getDataAs<struct nlmsghdr>(bufFac, 0, m_msg.length());
+const struct nlmsghdr* NetlinkMessage::header()
+{
+    return m_hdr;
 }

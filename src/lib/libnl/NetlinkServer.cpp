@@ -2,6 +2,7 @@
 #include "NetlinkServer.hpp"
 #include "NetlinkMessage.hpp"
 #include "NetlinkSocket.hpp"
+#include "RtnlLinkMessage.hpp"
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -160,7 +161,7 @@ void NetlinkServer::worker()
 
                 auto buf(m_bufFac.allocate(nh->nlmsg_len));
                 memcpy(buf->ptr<void>(), nh, nh->nlmsg_len);
-                m_rx_cb(NetlinkMessage(buf));
+                m_rx_cb(RtnlLinkMessage(m_bufFac, buf));
             }
         }
     }
