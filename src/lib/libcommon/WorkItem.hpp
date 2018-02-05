@@ -13,7 +13,7 @@ class WorkItem : public IWorkItem
 public:
     WorkItem(size_t n);
     WorkItem(WorkQueue *wq);
-    ~WorkItem();
+    virtual ~WorkItem();
 
     void run() override;
     bool defer(std::function<void(void)> f) override;
