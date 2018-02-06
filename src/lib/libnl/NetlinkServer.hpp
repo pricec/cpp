@@ -14,11 +14,6 @@
 #include <map>
 #include "libcommon/WorkItem.hpp"
 
-namespace common
-{
-class UUID;
-}
-
 namespace buffer
 {
 class BufferSegmentFactory;
@@ -66,13 +61,6 @@ public:
     bool stop();
 
     /**
-     * Set the callback function that will be invoked for
-     * every received message. At this time, more granular
-     * callbacks are not supported.
-     */
-    void set_rx_cb(std::function<void(NetlinkMessage)> f);
-
-    /**
      * Listen for netlink messages from the given family
      * and groups. Any messages originating from the kernel
      * with this signature will result in an invocation of
@@ -82,7 +70,11 @@ public:
      *       start. Whenever you call stop, all listeners
      *       are lost.
      */
-    void listen(int netlink_family, uint32_t groups);
+    void listen(
+        int netlink_family,
+        uint32_t groups,
+        std::function<void(NetlinkMessage)> rx_cb
+    );
 
     /**
      * Ignore netlink messages from the given family. This
@@ -90,20 +82,22 @@ public:
      * family to be closed and the corresponding object to
      * be destroyed.
      */
-    void ignore(int netlink_family);
+    void ignore(int netlink_family, uint32_t groups);
 
 private:
     void worker();
 
 private:
-    static const uint16_t               s_max_events = 10;
-    static const uint32_t               s_buf_size   = 32768;
-    bool                                m_running;
-    buffer::BufferSegmentFactory       &m_bufFac;
-    int                                 m_donefd;
-    int                                 m_epollfd;
-    std::map<int, NetlinkSocket>        m_sockets; // netlink_family -> sockfd
-    std::function<void(NetlinkMessage)> m_rx_cb;
+    static const uint16_t                               s_max_events = 10;
+    static const uint32_t                               s_buf_size   = 32768;
+    bool                                                m_running;
+    buffer::BufferSegmentFactory                       &m_bufFac;
+    int                                                 m_donefd;
+    int                                                 m_epollfd;
+    // (NL family, group) -> socket
+    std::map<std::pair<int, uint32_t>, NetlinkSocket>   m_sockets;
+    // socket fd -> callback function
+    std::map<int, std::function<void(NetlinkMessage)> > m_callbacks;
 };
 
 }

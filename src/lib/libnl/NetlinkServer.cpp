@@ -2,7 +2,6 @@
 #include "NetlinkServer.hpp"
 #include "NetlinkMessage.hpp"
 #include "NetlinkSocket.hpp"
-#include "RtnlLinkMessage.hpp"
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -17,7 +16,7 @@ NetlinkServer::NetlinkServer(buffer::BufferSegmentFactory &bufFac)
     , m_donefd(0)
     , m_epollfd(0)
     , m_sockets()
-    , m_rx_cb([] (NetlinkMessage msg) {})
+    , m_callbacks()
 {}
 
 NetlinkServer::~NetlinkServer()
@@ -45,6 +44,7 @@ bool NetlinkServer::start()
     if (m_epollfd < 1)
     {
         ::close(m_donefd);
+        m_epollfd = 0;
         m_donefd = 0;
         return false;
     }
@@ -55,7 +55,7 @@ bool NetlinkServer::start()
     ev.events = EPOLLIN;
     ev.data.fd = m_donefd;
 
-    epoll_ctl(m_epollfd, EPOLL_CTL_ADD, m_donefd, &ev);
+    ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, m_donefd, &ev);
 
     defer([this] () { this->worker(); });
     return true;
@@ -68,39 +68,39 @@ bool NetlinkServer::stop()
         uint64_t val = 1;
         ::write(m_donefd, &val, sizeof(uint64_t));
         m_running = false;
+        m_sockets.clear();
+        m_callbacks.clear();
     }
     return true;
 }
 
-void NetlinkServer::set_rx_cb(std::function<void(NetlinkMessage)> f)
-{
-    m_rx_cb = f;
-}
-
-void NetlinkServer::listen(int netlink_family, uint32_t groups)
-{
-    if (m_sockets.count(netlink_family) == 0)
+void NetlinkServer::listen(
+    int netlink_family,
+    uint32_t groups,
+    std::function<void(NetlinkMessage)> rx_cb
+) {
+    if (m_sockets.count(std::pair<int, uint32_t>(netlink_family, groups)) == 0)
     {
-        auto s = m_sockets.emplace(netlink_family, netlink_family).first;
-        const NetlinkSocket &sock = s->second;
+        auto s = m_sockets.emplace(
+            std::pair<int, uint32_t>(netlink_family, groups), netlink_family
+        ).first;
+        NetlinkSocket &sock = s->second;
+
+        m_callbacks.emplace(sock.fd(), rx_cb);
 
         struct epoll_event ev;
         ev.events = EPOLLIN;
         ev.data.fd = sock.fd();
 
         ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, sock.fd(), &ev);
-    }
 
-    auto it = m_sockets.find(netlink_family);
-    if (it != m_sockets.end())
-    {
-        it->second.listen(groups);
+        sock.listen(groups);
     }
 }
 
-void NetlinkServer::ignore(int netlink_family)
+void NetlinkServer::ignore(int netlink_family, uint32_t groups)
 {
-    auto it = m_sockets.find(netlink_family);
+    auto it = m_sockets.find(std::pair<int, uint32_t>(netlink_family, groups));
     if (it != m_sockets.end())
     {
         const NetlinkSocket &sock(it->second);
@@ -110,7 +110,8 @@ void NetlinkServer::ignore(int netlink_family)
         ev.data.fd = sock.fd();
 
         ::epoll_ctl(m_epollfd, EPOLL_CTL_DEL, sock.fd(), &ev);
-        m_sockets.erase(netlink_family);
+        m_callbacks.erase(sock.fd());
+        m_sockets.erase(std::pair<int, uint32_t>(netlink_family, groups));
     }
 }
 
@@ -161,7 +162,12 @@ void NetlinkServer::worker()
 
                 auto buf(m_bufFac.allocate(nh->nlmsg_len));
                 memcpy(buf->ptr<void>(), nh, nh->nlmsg_len);
-                m_rx_cb(RtnlLinkMessage(m_bufFac, buf));
+
+                auto it = m_callbacks.find(events[i].data.fd);
+                if (it != m_callbacks.end())
+                {
+                    it->second(NetlinkMessage(m_bufFac, buf));
+                }
             }
         }
     }

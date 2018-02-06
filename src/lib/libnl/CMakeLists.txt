@@ -3,5 +3,4 @@ add_library(
   NetlinkSocket.cpp
   NetlinkMessage.cpp
   NetlinkServer.cpp
-  RtnlLinkMessage.cpp
 )
