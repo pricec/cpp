@@ -70,9 +70,17 @@ public:
      *       start. Whenever you call stop, all listeners
      *       are lost.
      */
-    void listen(
+    bool listen(
         int netlink_family,
         uint32_t groups,
+        std::function<void(NetlinkMessage)> rx_cb
+    );
+
+    bool send(
+        int netlink_family,
+        uint32_t group,
+        buffer::BufferSegmentFactory &bufFac,
+        NetlinkMessage msg,
         std::function<void(NetlinkMessage)> rx_cb
     );
 

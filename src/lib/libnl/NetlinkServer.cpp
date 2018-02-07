@@ -74,7 +74,7 @@ bool NetlinkServer::stop()
     return true;
 }
 
-void NetlinkServer::listen(
+bool NetlinkServer::listen(
     int netlink_family,
     uint32_t groups,
     std::function<void(NetlinkMessage)> rx_cb
@@ -94,8 +94,51 @@ void NetlinkServer::listen(
 
         ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, sock.fd(), &ev);
 
-        sock.listen(groups);
+        return sock.listen(groups);
     }
+    return false;
+}
+
+bool NetlinkServer::send(
+    int netlink_family,
+    uint32_t group,
+    buffer::BufferSegmentFactory &bufFac,
+    NetlinkMessage msg,
+    std::function<void(NetlinkMessage)> rx_cb
+) {
+    if (listen(
+            netlink_family,
+            group,
+            [netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
+            {
+                if (nlm.header()->nlmsg_type == NLMSG_DONE)
+                {
+                    ignore(netlink_family, group);
+                }
+                else
+                {
+                    rx_cb(nlm);
+                }
+            }
+        )
+    ) {
+        auto it = m_sockets.find(
+            std::pair<int, uint32_t>(netlink_family, group)
+        );
+        if (it != m_sockets.end())
+        {
+            // TODO: iovec send
+            msg.buffer().flatten(bufFac);
+
+            NetlinkSocket &sock(it->second);
+            return sock.write(
+                msg.buffer().getDataAs<char>(
+                    bufFac, 0, msg.length()
+                ), msg.length());
+        }
+    }
+    ignore(netlink_family, group);
+    return false;
 }
 
 void NetlinkServer::ignore(int netlink_family, uint32_t groups)
@@ -149,11 +192,6 @@ void NetlinkServer::worker()
                 NLMSG_OK(nh, n);
                 nh = NLMSG_NEXT(nh, n)
             ) {
-                if (nh->nlmsg_type == NLMSG_DONE)
-                {
-                    break;
-                }
-
                 if (nh->nlmsg_type == NLMSG_ERROR)
                 {
                     //TODO: error handling
