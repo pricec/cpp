@@ -30,7 +30,7 @@ NetlinkMessage& NetlinkMessage::operator=(const NetlinkMessage &rhs)
     return *this;
 }
 
-const struct nlmsghdr* NetlinkMessage::header()
+const struct nlmsghdr* NetlinkMessage::header() const
 {
     return m_hdr;
 }

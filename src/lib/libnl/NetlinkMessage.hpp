@@ -36,9 +36,11 @@ public:
      * Get a pointer to the const header, casted into a
      * nlmsghdr for easy use.
      */
-    const struct nlmsghdr* header();
+    const struct nlmsghdr* header() const;
 
-    const buffer::Buffer buffer() const { return m_msg; }
+    buffer::Buffer buffer() const { return m_msg; }
+
+    uint32_t length() const { return header()->nlmsg_len; }
 
 protected:
     buffer::Buffer         m_msg;
