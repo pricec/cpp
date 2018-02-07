@@ -127,7 +127,7 @@ public:
     }
 
     template <typename T>
-    const T* getDataAs(
+    T* getDataAs(
         BufferSegmentFactory &bufFac, size_t offset, size_t length
     ) {
         flatten(bufFac, offset, length);
