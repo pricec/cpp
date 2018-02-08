@@ -2,6 +2,7 @@ add_executable(
   t-libnet
   t-libnet.cpp
   TestMacAddress.cpp
+  TestIPv4Address.cpp
 )
 
 add_test(
