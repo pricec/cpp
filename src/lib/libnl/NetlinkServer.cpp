@@ -111,13 +111,10 @@ bool NetlinkServer::send(
             group,
             [netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
             {
+                rx_cb(nlm);
                 if (nlm.header()->nlmsg_type == NLMSG_DONE)
                 {
                     ignore(netlink_family, group);
-                }
-                else
-                {
-                    rx_cb(nlm);
                 }
             }
         )
