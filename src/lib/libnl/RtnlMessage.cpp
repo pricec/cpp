@@ -21,21 +21,13 @@ RtnlMessage<T>::RtnlMessage(
 template <typename T>
 RtnlMessage<T>::RtnlMessage(const RtnlMessage<T> &other)
     : NetlinkMessage(other)
-{
-    *this = other;
-}
+    , m_msg(other.m_msg)
+    , m_attrs(other.m_attrs)
+{}
 
 template <typename T>
 RtnlMessage<T>::~RtnlMessage()
 {}
-
-template <typename T>
-RtnlMessage<T>& RtnlMessage<T>::operator=(const RtnlMessage<T> &rhs)
-{
-    this->m_msg   = rhs.m_msg;
-    this->m_attrs = rhs.m_attrs;
-    return *this;
-}
 
 template <typename T>
 const T* RtnlMessage<T>::msg()

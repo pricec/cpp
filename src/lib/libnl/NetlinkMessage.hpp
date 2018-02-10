@@ -30,7 +30,7 @@ public:
     NetlinkMessage(const NetlinkMessage &other);
     virtual ~NetlinkMessage();
 
-    virtual NetlinkMessage& operator=(const NetlinkMessage &rhs);
+    NetlinkMessage& operator=(const NetlinkMessage &rhs);
 
     /**
      * Get a pointer to the const header, casted into a

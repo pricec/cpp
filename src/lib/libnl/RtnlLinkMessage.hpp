@@ -22,8 +22,6 @@ public:
 
     ~RtnlLinkMessage();
 
-    RtnlLinkMessage& operator=(const RtnlLinkMessage &rhs);
-
     const std::string& name() const { return m_name; }
     const struct rtnl_link_stats* stats() const { return m_stats; }
 

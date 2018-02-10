@@ -26,8 +26,6 @@ public:
 
     virtual ~RtnlMessage();
 
-    virtual RtnlMessage<T>& operator=(const RtnlMessage &rhs);
-
     const T* msg();
     const std::vector<const struct rtattr*>& rtattrs();
 

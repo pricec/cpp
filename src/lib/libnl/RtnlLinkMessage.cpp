@@ -44,16 +44,11 @@ RtnlLinkMessage::RtnlLinkMessage(
 
 RtnlLinkMessage::RtnlLinkMessage(const RtnlLinkMessage &other)
     : RtnlMessage<ifinfomsg>(other)
+    , m_name(other.m_name)
+    , m_stats(other.m_stats)
 {
     *this = other;
 }
 
 RtnlLinkMessage::~RtnlLinkMessage()
 {}
-
-RtnlLinkMessage& RtnlLinkMessage::operator=(const RtnlLinkMessage &rhs)
-{
-    this->m_name  = rhs.m_name;
-    this->m_stats = rhs.m_stats;
-    return *this;
-}
