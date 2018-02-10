@@ -3,6 +3,7 @@
 using namespace net;
 
 NetworkInterface::NetworkInterface(
+    int         ifindex,
     std::string name,
     uint16_t    mtu,
     std::string qdisc,
@@ -11,7 +12,8 @@ NetworkInterface::NetworkInterface(
     IPv4Address ip4addr,
     IPv4Address ip4broadcast
 )
-    : m_name(name)
+    : m_ifindex(ifindex)
+    , m_name(name)
     , m_mtu(mtu)
     , m_qdisc(qdisc)
     , m_hwaddr(hwaddr)
@@ -21,7 +23,8 @@ NetworkInterface::NetworkInterface(
 {}
 
 NetworkInterface::NetworkInterface(const NetworkInterface &other)
-    : m_name(other.m_name)
+    : m_ifindex(other.m_ifindex)
+    , m_name(other.m_name)
     , m_mtu(other.m_mtu)
     , m_qdisc(other.m_qdisc)
     , m_hwaddr(other.m_hwaddr)
@@ -32,6 +35,7 @@ NetworkInterface::NetworkInterface(const NetworkInterface &other)
 
 NetworkInterface& NetworkInterface::operator=(const NetworkInterface &rhs)
 {
+    this->m_ifindex       = rhs.m_ifindex;
     this->m_name          = rhs.m_name;
     this->m_mtu           = rhs.m_mtu;
     this->m_qdisc         = rhs.m_qdisc;

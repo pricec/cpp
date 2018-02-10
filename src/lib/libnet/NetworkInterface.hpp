@@ -10,6 +10,7 @@ class NetworkInterface
 {
 public:
     NetworkInterface(
+        int         ifindex,
         std::string name,
         uint16_t    mtu,
         std::string qdisc,
@@ -21,8 +22,10 @@ public:
     NetworkInterface(const NetworkInterface &other);
     NetworkInterface& operator=(const NetworkInterface &rhs);
     std::string str() const;
+    int index() const { return m_ifindex; }
 
 private:
+    int         m_ifindex;
     std::string m_name;
     uint16_t    m_mtu;
     std::string m_qdisc;

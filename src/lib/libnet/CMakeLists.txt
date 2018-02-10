@@ -3,4 +3,5 @@ add_library(
   MacAddress.cpp
   IPv4Address.cpp
   NetworkInterface.cpp
+  NetworkInterfaceStats.cpp
 )
