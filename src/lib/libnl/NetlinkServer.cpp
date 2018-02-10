@@ -75,28 +75,31 @@ bool NetlinkServer::stop()
 }
 
 bool NetlinkServer::listen(
+    common::UUID &uuid,
     int netlink_family,
     uint32_t groups,
     std::function<void(NetlinkMessage)> rx_cb
 ) {
-    if (m_sockets.count(std::pair<int, uint32_t>(netlink_family, groups)) == 0)
+    auto s = m_sockets.emplace(common::UUID(), netlink_family).first;
+    NetlinkSocket &sock = s->second;
+
+    if (!sock.listen(groups))
     {
-        auto s = m_sockets.emplace(
-            std::pair<int, uint32_t>(netlink_family, groups), netlink_family
-        ).first;
-        NetlinkSocket &sock = s->second;
-
-        m_callbacks.emplace(sock.fd(), rx_cb);
-
-        struct epoll_event ev;
-        ev.events = EPOLLIN;
-        ev.data.fd = sock.fd();
-
-        ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, sock.fd(), &ev);
-
-        return sock.listen(groups);
+        m_sockets.erase(s->first);
+        return false;
     }
-    return false;
+
+    uuid = s->first;
+    m_uuids.emplace(sock.fd(), uuid);
+    m_callbacks.emplace(uuid, rx_cb);
+
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = sock.fd();
+
+    ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, sock.fd(), &ev);
+
+    return true;
 }
 
 bool NetlinkServer::send(
@@ -106,22 +109,22 @@ bool NetlinkServer::send(
     NetlinkMessage msg,
     std::function<void(NetlinkMessage)> rx_cb
 ) {
+    common::UUID uuid;
     if (listen(
+            uuid,
             netlink_family,
             group,
-            [netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
+            [&uuid, netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
             {
                 rx_cb(nlm);
                 if (nlm.header()->nlmsg_type == NLMSG_DONE)
                 {
-                    ignore(netlink_family, group);
+                    ignore(uuid);
                 }
             }
         )
     ) {
-        auto it = m_sockets.find(
-            std::pair<int, uint32_t>(netlink_family, group)
-        );
+        auto it = m_sockets.find(uuid);
         if (it != m_sockets.end())
         {
             // TODO: iovec send
@@ -134,13 +137,13 @@ bool NetlinkServer::send(
                 ), msg.length());
         }
     }
-    ignore(netlink_family, group);
+    ignore(uuid);
     return false;
 }
 
-void NetlinkServer::ignore(int netlink_family, uint32_t groups)
+void NetlinkServer::ignore(common::UUID uuid)
 {
-    auto it = m_sockets.find(std::pair<int, uint32_t>(netlink_family, groups));
+    auto it = m_sockets.find(uuid);
     if (it != m_sockets.end())
     {
         const NetlinkSocket &sock(it->second);
@@ -150,8 +153,10 @@ void NetlinkServer::ignore(int netlink_family, uint32_t groups)
         ev.data.fd = sock.fd();
 
         ::epoll_ctl(m_epollfd, EPOLL_CTL_DEL, sock.fd(), &ev);
-        m_callbacks.erase(sock.fd());
-        m_sockets.erase(std::pair<int, uint32_t>(netlink_family, groups));
+
+        m_uuids.erase(sock.fd());
+        m_callbacks.erase(uuid);
+        m_sockets.erase(uuid);
     }
 }
 
@@ -162,7 +167,7 @@ void NetlinkServer::worker()
 
     while (true)
     {
-        int nfds = epoll_wait(m_epollfd, events, s_max_events, -1);
+        int nfds = ::epoll_wait(m_epollfd, events, s_max_events, -1);
         if (nfds == -1)
         {
             // TODO: log this?
@@ -196,12 +201,16 @@ void NetlinkServer::worker()
                 }
 
                 auto buf(m_bufFac.allocate(nh->nlmsg_len));
-                memcpy(buf->ptr<void>(), nh, nh->nlmsg_len);
+                ::memcpy(buf->ptr<void>(), nh, nh->nlmsg_len);
 
-                auto it = m_callbacks.find(events[i].data.fd);
-                if (it != m_callbacks.end())
+                auto uuid_it = m_uuids.find(events[i].data.fd);
+                if (uuid_it != m_uuids.end())
                 {
-                    it->second(NetlinkMessage(m_bufFac, buf));
+                    auto it = m_callbacks.find(uuid_it->second);
+                    if (it != m_callbacks.end())
+                    {
+                        it->second(NetlinkMessage(m_bufFac, buf));
+                    }
                 }
             }
         }

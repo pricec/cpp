@@ -1,3 +1,4 @@
+#pragma once
 #include "NetlinkMessage.hpp"
 #include "libbuffer/Buffer.hpp"
 
@@ -20,14 +21,6 @@ public:
         buffer::BufferSegmentFactory &bufFac,
         const NetlinkMessage &msg
     );
-
-    /*
-    RtnlMessage(
-        buffer::BufferSegmentFactory &bufFac,
-        const struct nlmsghdr *hdr,
-        const void *msg        
-    );
-    */
 
     RtnlMessage(const RtnlMessage<T> &other);
 

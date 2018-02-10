@@ -13,6 +13,7 @@
 #include <functional>
 #include <map>
 #include "libcommon/WorkItem.hpp"
+#include "libcommon/UUID.hpp"
 
 namespace buffer
 {
@@ -71,14 +72,24 @@ public:
      *       are lost.
      */
     bool listen(
+        common::UUID &uuid,
         int netlink_family,
         uint32_t groups,
         std::function<void(NetlinkMessage)> rx_cb
     );
 
+    /**
+     * Send the argument netlink message. This message should
+     * be of the argument family and group. The callback will
+     * be invoked once for each netlink message received in
+     * response, including the terminating NLMSG_DONE message.
+     * The function will handle allocating and deallocating a
+     * netlink socket. If a problem occurs during setup, false
+     * will be returned.
+     */
     bool send(
         int netlink_family,
-        uint32_t group,
+        uint32_t groups,
         buffer::BufferSegmentFactory &bufFac,
         NetlinkMessage msg,
         std::function<void(NetlinkMessage)> rx_cb
@@ -90,22 +101,21 @@ public:
      * family to be closed and the corresponding object to
      * be destroyed.
      */
-    void ignore(int netlink_family, uint32_t groups);
+    void ignore(common::UUID uuid);
 
 private:
     void worker();
 
 private:
-    static const uint16_t                               s_max_events = 10;
-    static const uint32_t                               s_buf_size   = 32768;
-    bool                                                m_running;
-    buffer::BufferSegmentFactory                       &m_bufFac;
-    int                                                 m_donefd;
-    int                                                 m_epollfd;
-    // (NL family, group) -> socket
-    std::map<std::pair<int, uint32_t>, NetlinkSocket>   m_sockets;
-    // socket fd -> callback function
-    std::map<int, std::function<void(NetlinkMessage)> > m_callbacks;
+    static const uint16_t                 s_max_events = 10;
+    static const uint32_t                 s_buf_size   = 32768;
+    bool                                  m_running;
+    buffer::BufferSegmentFactory         &m_bufFac;
+    int                                   m_donefd;
+    int                                   m_epollfd;
+    std::map<int, common::UUID>           m_uuids;  // socket fd -> UUID
+    std::map<common::UUID, NetlinkSocket> m_sockets;
+    std::map<common::UUID, std::function<void(NetlinkMessage)> > m_callbacks;
 };
 
 }
