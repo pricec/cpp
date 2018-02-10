@@ -24,19 +24,18 @@ public:
 
     RtnlMessage(const RtnlMessage<T> &other);
 
-    ~RtnlMessage();
+    virtual ~RtnlMessage();
 
-    RtnlMessage<T>& operator=(const RtnlMessage &rhs);
+    virtual RtnlMessage<T>& operator=(const RtnlMessage &rhs);
 
     const T* msg();
     const std::vector<const struct rtattr*>& rtattrs();
 
-private:
+protected:
     const T                           *m_msg;
     std::vector<const struct rtattr*>  m_attrs;
 };
 
-using RtnlLinkMessage    = RtnlMessage<struct ifinfomsg>;
 using RtnlAddrMessage    = RtnlMessage<struct ifaddrmsg>;
 using RtnlRouteMessage   = RtnlMessage<struct rtmsg>;
 using RtnlNeighMessage   = RtnlMessage<struct ndmsg>;
