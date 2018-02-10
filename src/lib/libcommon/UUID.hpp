@@ -38,7 +38,7 @@ public:
         return *this;
     }
 
-    bool operator<(const UUID &rhs)
+    bool operator<(const UUID &rhs) const
     {
         if (m_major < rhs.m_major)
         {
