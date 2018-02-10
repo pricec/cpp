@@ -8,6 +8,7 @@ namespace net
 class MacAddress
 {
 public:
+    MacAddress();
     MacAddress(const void *buf, common::Endianness end);
     MacAddress(const MacAddress &other);
     MacAddress& operator=(const MacAddress &rhs);
@@ -16,7 +17,7 @@ public:
 
 private:
     static const int s_macaddr_len = 6;
-    uint8_t bytes[s_macaddr_len + 1];
+    uint8_t m_bytes[s_macaddr_len + 1];
 };
 
 }

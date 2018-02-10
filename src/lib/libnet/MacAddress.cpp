@@ -4,18 +4,23 @@
 
 using namespace net;
 
+MacAddress::MacAddress()
+{
+    ::memset(m_bytes, 0, s_macaddr_len + 1);
+}
+
 MacAddress::MacAddress(const void *buf, common::Endianness end)
 {
-    bytes[s_macaddr_len] = '\0';
+    m_bytes[s_macaddr_len] = '\0';
     for (int i = 0; i < s_macaddr_len; ++i)
     {
         if (end == common::Endianness::BIG)
         {
-            bytes[i] = ((char *)buf)[i];
+            m_bytes[i] = ((char *)buf)[i];
         }
         else
         {
-            bytes[i] = ((char *)buf)[s_macaddr_len - 1 - i];
+            m_bytes[i] = ((char *)buf)[s_macaddr_len - 1 - i];
         }
     }
 }
@@ -27,13 +32,13 @@ MacAddress::MacAddress(const MacAddress &other)
 
 MacAddress& MacAddress::operator=(const MacAddress &rhs)
 {
-    ::memcpy(this->bytes, rhs.bytes, s_macaddr_len + 1);
+    ::memcpy(this->m_bytes, rhs.m_bytes, s_macaddr_len + 1);
     return *this;
 }
 
 bool MacAddress::operator==(const MacAddress &other) const
 {
-    return ::memcmp(this->bytes, other.bytes, s_macaddr_len) == 0;
+    return ::memcmp(this->m_bytes, other.m_bytes, s_macaddr_len) == 0;
 }
 
 std::string MacAddress::str() const
@@ -46,7 +51,7 @@ std::string MacAddress::str() const
         {
             str.append(":");
         }
-        sprintf(byte, "%02x", bytes[i]);
+        sprintf(byte, "%02x", m_bytes[i]);
         str.append(byte);
     }
     return str;

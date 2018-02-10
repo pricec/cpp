@@ -2,6 +2,11 @@
 
 using namespace net;
 
+IPv4Address::IPv4Address()
+    : m_address(0)
+    , m_endianness(common::Endianness::BIG)
+{}
+
 IPv4Address::IPv4Address(uint32_t address, common::Endianness endianness)
     : m_address(address)
     , m_endianness(endianness)
