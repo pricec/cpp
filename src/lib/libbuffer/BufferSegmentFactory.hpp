@@ -36,4 +36,4 @@ private:
     IBufferSegmentAllocationStrategy &m_strategy;
 };
 
-}; // namespace message
+} // namespace buffer
