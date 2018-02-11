@@ -10,13 +10,15 @@
 using namespace net;
 
 NetworkStatsMonitor::NetworkStatsMonitor(
+    common::WorkQueue               &wq,
     buffer::BufferSegmentFactory    &bufFac,
     netlink::NetlinkServer          &nlServer,
     NetworkInterface                 interface,
     std::chrono::duration<uint64_t>  interval,
     uint16_t                         sampleSize
 )
-    : m_bufFac(bufFac)
+    : common::WorkItem(&wq)
+    , m_bufFac(bufFac)
     , m_nlServer(nlServer)
     , m_interface(interface)
     , m_stats(bufFac, sampleSize)
@@ -58,16 +60,18 @@ void NetworkStatsMonitor::statsCallback(netlink::NetlinkMessage nlm)
 {
     if (nlm.header()->nlmsg_type == NLMSG_DONE && !this->m_wantExit)
     {
-        // TODO: defer waiting to a different thread.
-        //       Right now this makes the nlServer unusable
-        //       by anyone else.
-        std::this_thread::sleep_for(m_interval);
-        m_nlServer.send(
-            NETLINK_ROUTE,
-            RTM_NEWLINK,
-            m_bufFac,
-            makeNlRequest(),
-            [&] (NetlinkMessage nlm) { this->statsCallback(nlm); }
+        defer(
+            [&] ()
+            {
+                std::this_thread::sleep_for(m_interval);
+                m_nlServer.send(
+                    NETLINK_ROUTE,
+                    RTM_NEWLINK,
+                    m_bufFac,
+                    makeNlRequest(),
+                    [&] (NetlinkMessage nlm) { this->statsCallback(nlm); }
+                );
+            }
         );
     }
     else if (nlm.header()->nlmsg_type != NLMSG_DONE)
@@ -123,8 +127,12 @@ bool NetworkStatsMonitor::stop()
 
 bool NetworkStatsMonitor::waitStop()
 {
-    uint64_t val = 0;
-    ssize_t n = ::read(m_donefd, &val, sizeof(uint64_t));
-    ::close(m_donefd);
-    return n == sizeof(uint64_t);
+    if (m_wantExit)
+    {
+        uint64_t val = 0;
+        ssize_t n = ::read(m_donefd, &val, sizeof(uint64_t));
+        ::close(m_donefd);
+        return n == sizeof(uint64_t);
+    }
+    return false;
 }
