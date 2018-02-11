@@ -4,4 +4,6 @@ add_library(
   IPv4Address.cpp
   NetworkInterface.cpp
   NetworkInterfaceStats.cpp
+  NetworkInterfaceStatsBuffer.cpp
+  NetworkStatsMonitor.cpp
 )

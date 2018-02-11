@@ -23,6 +23,7 @@ public:
     NetworkInterface& operator=(const NetworkInterface &rhs);
     std::string str() const;
     int index() const { return m_ifindex; }
+    const std::string& name() const { return m_name; }
 
 private:
     int         m_ifindex;
