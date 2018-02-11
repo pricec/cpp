@@ -114,7 +114,7 @@ bool NetlinkServer::send(
             uuid,
             netlink_family,
             group,
-            [&uuid, netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
+            [uuid, netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
             {
                 rx_cb(nlm);
                 if (nlm.header()->nlmsg_type == NLMSG_DONE)
@@ -133,8 +133,12 @@ bool NetlinkServer::send(
             NetlinkSocket &sock(it->second);
             return sock.write(
                 msg.buffer().getDataAs<char>(
-                    bufFac, 0, msg.length()
-                ), msg.length());
+                    bufFac,
+                    0,
+                    msg.length()
+                ),
+                msg.length()
+            );
         }
     }
     ignore(uuid);
