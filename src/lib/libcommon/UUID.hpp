@@ -51,6 +51,14 @@ public:
         return m_minor < rhs.m_minor;
     }
 
+    std::string str() const
+    {
+        std::string result;
+        result.append(std::to_string(m_major));
+        result.append(std::to_string(m_minor));
+        return result;
+    }
+
 private:
     uint64_t m_major;
     uint64_t m_minor;
