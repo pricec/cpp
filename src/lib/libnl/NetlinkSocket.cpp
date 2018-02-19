@@ -11,7 +11,7 @@ NetlinkSocket::NetlinkSocket(int netlink_family)
     m_sockfd = ::socket(AF_NETLINK, SOCK_DGRAM, netlink_family);
     if (m_sockfd < 0)
     {
-        printf("ERROR: Failed to allocate netlink socket\n");
+        ::printf("ERROR: Failed to allocate netlink socket\n");
     }
 }
 

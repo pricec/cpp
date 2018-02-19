@@ -80,7 +80,7 @@ bool NetlinkServer::listen(
     uint32_t groups,
     std::function<void(NetlinkMessage)> rx_cb
 ) {
-    auto s = m_sockets.emplace(common::UUID(), netlink_family).first;
+    auto s = m_sockets.emplace(uuid, netlink_family).first;
     NetlinkSocket &sock = s->second;
 
     if (!sock.listen(groups))
@@ -89,7 +89,6 @@ bool NetlinkServer::listen(
         return false;
     }
 
-    uuid = s->first;
     m_uuids.emplace(sock.fd(), uuid);
     m_callbacks.emplace(uuid, rx_cb);
 
@@ -100,6 +99,30 @@ bool NetlinkServer::listen(
     ::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, sock.fd(), &ev);
 
     return true;
+}
+
+bool NetlinkServer::transmit(
+    common::UUID &uuid,
+    buffer::BufferSegmentFactory &bufFac,
+    NetlinkMessage msg
+) {
+    auto it = m_sockets.find(uuid);
+    if (it != m_sockets.end())
+    {
+        // TODO: iovec send
+        msg.buffer().flatten(bufFac);
+
+        NetlinkSocket &sock(it->second);
+        return sock.write(
+            msg.buffer().getDataAs<char>(
+                bufFac,
+                0,
+                msg.length()
+            ),
+            msg.length()
+        );
+    }
+    return false;
 }
 
 bool NetlinkServer::send(
@@ -124,24 +147,8 @@ bool NetlinkServer::send(
             }
         )
     ) {
-        auto it = m_sockets.find(uuid);
-        if (it != m_sockets.end())
-        {
-            // TODO: iovec send
-            msg.buffer().flatten(bufFac);
-
-            NetlinkSocket &sock(it->second);
-            return sock.write(
-                msg.buffer().getDataAs<char>(
-                    bufFac,
-                    0,
-                    msg.length()
-                ),
-                msg.length()
-            );
-        }
+        return transmit(uuid, bufFac, msg);
     }
-    ignore(uuid);
     return false;
 }
 

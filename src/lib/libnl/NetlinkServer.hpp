@@ -79,6 +79,16 @@ public:
     );
 
     /**
+     * Send the argument netlink message on the argument
+     * socket, described by the argument uuid.
+     */
+    bool transmit(
+        common::UUID &uuid,
+        buffer::BufferSegmentFactory &bufFac,
+        NetlinkMessage msg
+    );
+
+    /**
      * Send the argument netlink message. This message should
      * be of the argument family and group. The callback will
      * be invoked once for each netlink message received in
