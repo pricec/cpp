@@ -93,16 +93,19 @@ public:
      * be of the argument family and group. The callback will
      * be invoked once for each netlink message received in
      * response, including the terminating NLMSG_DONE message.
-     * The function will handle allocating and deallocating a
-     * netlink socket. If a problem occurs during setup, false
-     * will be returned.
+     * If expectDone is set to false, then no NLMSG_DONE message
+     * will be expected; the socket will be closed after receiving
+     * just one message. The function will handle allocating and
+     * deallocating a netlink socket. If a problem occurs during
+     * setup, false will be returned.
      */
     bool send(
         int netlink_family,
         uint32_t groups,
         buffer::BufferSegmentFactory &bufFac,
         NetlinkMessage msg,
-        std::function<void(NetlinkMessage)> rx_cb
+        std::function<void(NetlinkMessage)> rx_cb,
+        bool expectDone
     );
 
     /**

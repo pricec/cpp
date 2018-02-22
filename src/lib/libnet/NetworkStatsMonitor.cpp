@@ -69,7 +69,8 @@ void NetworkStatsMonitor::statsCallback(netlink::NetlinkMessage nlm)
                     RTM_NEWLINK,
                     m_bufFac,
                     makeNlRequest(),
-                    [&] (NetlinkMessage nlm) { this->statsCallback(nlm); }
+                    [&] (NetlinkMessage nlm) { this->statsCallback(nlm); },
+                    true
                 );
             }
         );
@@ -114,7 +115,8 @@ bool NetworkStatsMonitor::start(
         RTM_NEWLINK,
         m_bufFac,
         makeNlRequest(),
-        [&] (NetlinkMessage nlm) { this->statsCallback(nlm); }
+        [&] (NetlinkMessage nlm) { this->statsCallback(nlm); },
+        true
     );
 }
 

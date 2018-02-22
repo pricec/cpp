@@ -130,17 +130,18 @@ bool NetlinkServer::send(
     uint32_t group,
     buffer::BufferSegmentFactory &bufFac,
     NetlinkMessage msg,
-    std::function<void(NetlinkMessage)> rx_cb
+    std::function<void(NetlinkMessage)> rx_cb,
+    bool expectDone
 ) {
     common::UUID uuid;
     if (listen(
             uuid,
             netlink_family,
             group,
-            [uuid, netlink_family, group, rx_cb, this] (NetlinkMessage nlm)
+            [=] (NetlinkMessage nlm)
             {
                 rx_cb(nlm);
-                if (nlm.header()->nlmsg_type == NLMSG_DONE)
+                if (!expectDone || nlm.header()->nlmsg_type == NLMSG_DONE)
                 {
                     ignore(uuid);
                 }
