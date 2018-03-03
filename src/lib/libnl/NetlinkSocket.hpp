@@ -16,12 +16,13 @@ namespace netlink
 class NetlinkSocket
 {
 public:
-    NetlinkSocket(int netlink_family);
+    NetlinkSocket();
     NetlinkSocket(const NetlinkSocket &other);
     ~NetlinkSocket();
     NetlinkSocket& operator=(const NetlinkSocket &other);
 
     int fd() const { return m_sockfd; }
+    bool allocate(int netlink_family);
     bool write(const void *buf, size_t buf_len);
     bool listen(uint32_t groups);
 

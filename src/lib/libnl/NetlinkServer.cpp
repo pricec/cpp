@@ -82,10 +82,10 @@ bool NetlinkServer::listen(
     uint32_t groups,
     std::function<void(NetlinkMessage)> rx_cb
 ) {
-    auto s = m_sockets.emplace(uuid, netlink_family).first;
+    auto s = m_sockets.emplace(uuid, NetlinkSocket{}).first;
     NetlinkSocket &sock = s->second;
 
-    if (!sock.listen(groups))
+    if (!sock.allocate(netlink_family) || !sock.listen(groups))
     {
         m_sockets.erase(s->first);
         return false;

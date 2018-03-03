@@ -6,14 +6,8 @@
 
 using namespace netlink;
 
-NetlinkSocket::NetlinkSocket(int netlink_family)
-{
-    m_sockfd = ::socket(AF_NETLINK, SOCK_DGRAM, netlink_family);
-    if (m_sockfd < 0)
-    {
-        ::printf("ERROR: Failed to allocate netlink socket\n");
-    }
-}
+NetlinkSocket::NetlinkSocket()
+{}
 
 NetlinkSocket::NetlinkSocket(const NetlinkSocket &other)
 {
@@ -34,6 +28,12 @@ NetlinkSocket& NetlinkSocket::operator=(const NetlinkSocket &other)
     return *this;
 }
 
+bool NetlinkSocket::allocate(int netlink_family)
+{
+    m_sockfd = ::socket(AF_NETLINK, SOCK_DGRAM, netlink_family);
+    return m_sockfd > -1;
+}
+
 bool NetlinkSocket::write(const void *buf, size_t buf_len)
 {
     if (m_sockfd > 0)
@@ -45,11 +45,15 @@ bool NetlinkSocket::write(const void *buf, size_t buf_len)
 
 bool NetlinkSocket::listen(uint32_t groups)
 {
-    struct sockaddr_nl sa;
+    if (m_sockfd > 0)
+    {
+        struct sockaddr_nl sa;
 
-    ::memset(&sa, 0, sizeof(sa));
-    sa.nl_family = AF_NETLINK;
-    sa.nl_groups = groups;
+        ::memset(&sa, 0, sizeof(sa));
+        sa.nl_family = AF_NETLINK;
+        sa.nl_groups = groups;
 
-    return ::bind(m_sockfd, (struct sockaddr *)&sa, sizeof(sa)) != -1;
+        return ::bind(m_sockfd, (struct sockaddr *)&sa, sizeof(sa)) != -1;
+    }
+    return false;
 }
