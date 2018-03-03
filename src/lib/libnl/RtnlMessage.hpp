@@ -1,5 +1,6 @@
 #pragma once
 #include "NetlinkMessage.hpp"
+#include "NetlinkMessageHeader.hpp"
 #include "libbuffer/Buffer.hpp"
 
 #include <linux/rtnetlink.h>

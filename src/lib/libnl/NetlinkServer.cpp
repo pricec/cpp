@@ -7,6 +7,8 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
+#include <linux/netlink.h>
+
 using namespace netlink;
 
 NetlinkServer::NetlinkServer(buffer::BufferSegmentFactory &bufFac)
@@ -141,7 +143,7 @@ bool NetlinkServer::send(
             [=] (NetlinkMessage nlm)
             {
                 rx_cb(nlm);
-                if (!expectDone || nlm.header()->nlmsg_type == NLMSG_DONE)
+                if (!expectDone || nlm.header().nlmsg_type() == NLMSG_DONE)
                 {
                     ignore(uuid);
                 }
@@ -201,11 +203,10 @@ void NetlinkServer::worker()
             msg = { &sa, sizeof(sa), &iov, 1, NULL, 0, 0 };
             ssize_t n = ::recvmsg(events[i].data.fd, &msg, 0);
 
-            for (
-                nh = (struct nlmsghdr *)recv_buf;
-                NLMSG_OK(nh, n);
-                nh = NLMSG_NEXT(nh, n)
-            ) {
+            for ( nh = (struct nlmsghdr *)recv_buf
+                ; NLMSG_OK(nh, n)
+                ; nh = NLMSG_NEXT(nh, n) )
+            {
                 if (nh->nlmsg_type == NLMSG_ERROR)
                 {
                     //TODO: error handling

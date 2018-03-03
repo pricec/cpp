@@ -6,7 +6,7 @@ RtnlMessage<T>::RtnlMessage(
     const buffer::Buffer &buf
 )
     : NetlinkMessage(bufFac, buf)
-    , m_msg((const T*)NLMSG_DATA(header()))
+    , m_msg(header().template nlmsg_data<T>())
 {}
 
 template <typename T>
@@ -15,7 +15,7 @@ RtnlMessage<T>::RtnlMessage(
     const NetlinkMessage &msg
 )
     : NetlinkMessage(bufFac, msg.buffer())
-    , m_msg((const T*)NLMSG_DATA(header()))
+    , m_msg(header().template nlmsg_data<T>())
 {}
 
 template <typename T>
@@ -40,12 +40,11 @@ const std::vector<const struct rtattr*>& RtnlMessage<T>::rtattrs()
 {
     if (m_attrs.size() == 0)
     {
-        size_t len = m_hdr->nlmsg_len - NLMSG_LENGTH(sizeof(*m_msg));
-        for (
-            const struct rtattr *rta = IFLA_RTA(m_msg);
-            RTA_OK(rta, len);
-            rta = RTA_NEXT(rta, len)
-        ) {
+        size_t len = m_hdr.nlmsg_len() - NLMSG_LENGTH(sizeof(*m_msg));
+        for ( const struct rtattr *rta = IFLA_RTA(m_msg)
+            ; RTA_OK(rta, len)
+            ; rta = RTA_NEXT(rta, len) )
+        {
             m_attrs.emplace_back(rta);
         }
     }

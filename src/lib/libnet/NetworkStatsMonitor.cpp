@@ -58,7 +58,7 @@ netlink::NetlinkMessage NetworkStatsMonitor::makeNlRequest()
 
 void NetworkStatsMonitor::statsCallback(netlink::NetlinkMessage nlm)
 {
-    if (nlm.header()->nlmsg_type == NLMSG_DONE && !this->m_wantExit)
+    if (nlm.header().nlmsg_type() == NLMSG_DONE && !this->m_wantExit)
     {
         defer(
             [&] ()
@@ -75,7 +75,7 @@ void NetworkStatsMonitor::statsCallback(netlink::NetlinkMessage nlm)
             }
         );
     }
-    else if (nlm.header()->nlmsg_type != NLMSG_DONE)
+    else if (nlm.header().nlmsg_type() != NLMSG_DONE)
     {
         RtnlLinkMessage linkmsg(m_bufFac, nlm);
         const struct ifinfomsg *info = linkmsg.msg();
@@ -84,7 +84,7 @@ void NetworkStatsMonitor::statsCallback(netlink::NetlinkMessage nlm)
             if (!m_stats.insert(linkmsg.stats()))
             {
                 // TODO: error handling
-                printf("Error inserting\n");
+                ::printf("Error inserting\n");
             }
 
             if (m_stats.full())

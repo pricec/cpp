@@ -9,10 +9,9 @@ NetlinkMessage::NetlinkMessage(
     const buffer::Buffer &buf
 )
     : m_msg(buf)
+    , m_hdr(bufFac, buf)
 {
     m_msg.flatten(bufFac);
-    m_hdr = m_msg.getDataAs<struct nlmsghdr>(
-        bufFac, 0, sizeof(struct nlmsghdr));
 }
 
 NetlinkMessage::NetlinkMessage(const NetlinkMessage &other)
@@ -30,7 +29,7 @@ NetlinkMessage& NetlinkMessage::operator=(const NetlinkMessage &rhs)
     return *this;
 }
 
-const struct nlmsghdr* NetlinkMessage::header() const
+const NetlinkMessageHeader& NetlinkMessage::header() const
 {
     return m_hdr;
 }

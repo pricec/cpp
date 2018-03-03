@@ -7,6 +7,7 @@
 #pragma once
 #include "libbuffer/Buffer.hpp"
 #include "libbuffer/BufferSegmentFactory.hpp"
+#include "NetlinkMessageHeader.hpp"
 #include <linux/netlink.h>
 #include <stdint.h>
 
@@ -33,18 +34,18 @@ public:
     NetlinkMessage& operator=(const NetlinkMessage &rhs);
 
     /**
-     * Get a pointer to the const header, casted into a
-     * nlmsghdr for easy use.
+     * Get a reference to the objective representation
+     * of the nlmsghdr struct
      */
-    const struct nlmsghdr* header() const;
+    const NetlinkMessageHeader& header() const;
 
     buffer::Buffer buffer() const { return m_msg; }
 
-    uint32_t length() const { return header()->nlmsg_len; }
+    uint32_t length() const { return header().nlmsg_len(); }
 
 protected:
-    buffer::Buffer         m_msg;
-    const struct nlmsghdr *m_hdr;
+    buffer::Buffer       m_msg;
+    NetlinkMessageHeader m_hdr;
 };
 
 }
